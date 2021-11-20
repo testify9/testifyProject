@@ -1,7 +1,7 @@
 jobs:
   build:
     docker:
-      - image: 'node:latest'
+      - image: circleci/node:14
     steps:
       - checkout
       - sonarcloud/scan
