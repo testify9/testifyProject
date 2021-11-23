@@ -1,0 +1,74 @@
+[
+  {
+    "name": "minScore",
+    "expected": 0.9,
+    "actual": 0.46,
+    "values": [
+      0.46,
+      0.46,
+      0.46,
+      0.46,
+      0.46
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditProperty": "performance",
+    "auditId": "categories",
+    "level": "error",
+    "url": "http://localhost:4200/"
+  },
+  {
+    "name": "minScore",
+    "expected": 1,
+    "actual": 0.97,
+    "values": [
+      0.97,
+      0.97,
+      0.97,
+      0.97,
+      0.97
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditProperty": "accessibility",
+    "auditId": "categories",
+    "level": "error",
+    "url": "http://localhost:4200/"
+  },
+  {
+    "name": "minScore",
+    "expected": 1,
+    "actual": 0.93,
+    "values": [
+      0.93,
+      0.93,
+      0.93,
+      0.93,
+      0.93
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditProperty": "best-practices",
+    "auditId": "categories",
+    "level": "error",
+    "url": "http://localhost:4200/"
+  },
+  {
+    "name": "minScore",
+    "expected": 1,
+    "actual": 0.92,
+    "values": [
+      0.92,
+      0.92,
+      0.92,
+      0.92,
+      0.92
+    ],
+    "operator": ">=",
+    "passed": false,
+    "auditProperty": "seo",
+    "auditId": "categories",
+    "level": "error",
+    "url": "http://localhost:4200/"
+  }
+]
