@@ -7,11 +7,9 @@ jobs:
     steps:
       - checkout
       - sonarcloud/scan
-      - snyk/scan
       
 orbs:
   sonarcloud: sonarsource/sonarcloud@1.0.1
-  snyk: snyk/snyk@1.1.2
 
 workflows:
   main:
