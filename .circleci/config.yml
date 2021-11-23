@@ -10,15 +10,14 @@ jobs:
     steps:
       - checkout
       - sonarcloud/scan
-  lighthouse:
-    docker:
-      - image: circleci/node:14
-    steps:
       - run:
-          name: build
+          name: NPM Install
+          command: npm install
+      - run:
+          name: Build
           command: npm run build
       - run:
-          name: lighthouse
+          name: Lighthouse
           command: npm run lighthouse
 
 workflows:
@@ -26,4 +25,3 @@ workflows:
     jobs:
       - build:
           context: SonarCloud
-      - lighthouse
