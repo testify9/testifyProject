@@ -1,5 +1,9 @@
 version: 2.1
 
+orbs:
+  sonarcloud: sonarsource/sonarcloud@1.0.1
+  lighthouse-check: foo-software/lighthouse-check@0.0.13
+
 jobs:
   build:
     docker:
@@ -7,12 +11,15 @@ jobs:
     steps:
       - checkout
       - sonarcloud/scan
-      
-orbs:
-  sonarcloud: sonarsource/sonarcloud@1.0.1
+  lighthouse-test:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - lighthouse-check/audit
 
 workflows:
   main:
     jobs:
       - build:
           context: SonarCloud
+      - lighthouse-test
