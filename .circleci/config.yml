@@ -20,7 +20,7 @@ jobs:
           command: npm run build
       - run:  
           name: Install lhci 
-          command: npm install @lhci/cli@0.8.x
+          command: sudo npm install -g @lhci/cli@0.8.x
       - run: 
           name: Run lhci
           command: lhci autorun
