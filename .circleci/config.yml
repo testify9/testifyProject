@@ -2,12 +2,12 @@ version: 2.1
 
 orbs:
   sonarcloud: sonarsource/sonarcloud@1.0.1
+  browser-tools: circleci/browser-tools@1.2.3
 
 jobs:
   build:
     docker:
-      - image: cimg/node:14.18.2-browsers
-
+      - image: cimg/14.18.2
     steps:
       - checkout
       - sonarcloud/scan
@@ -20,6 +20,8 @@ jobs:
       - run:  
           name: Install lhci 
           command: sudo npm install -g @lhci/cli@0.8.x
+      - browser-tools/install-chrome
+      - browser-tools/install-chromedriver
       - run: 
           name: Run lhci
           command: lhci autorun
