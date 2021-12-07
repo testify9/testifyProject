@@ -17,9 +17,12 @@ jobs:
       - run:
           name: Build
           command: npm run build
-      #- run:
-          #name: Lighthouse
-          #command: npm run lighthouse
+      - run:  
+          name: Install lhci 
+          command: npm install -g @lhci/cli@0.8.x
+      - run: 
+          name: Run lhci
+          command: lhci autorun
 
 workflows:
   main:
