@@ -21,19 +21,19 @@ module.exports = {
     assert: {
       assertions: {
         'categories:performance': [
-          'error',
+          'warn',
           { minScore: 0.9, aggregationMethod: 'median-run' },
         ],
         'categories:accessibility': [
-          'error',
+          'warn',
           { minScore: 1, aggregationMethod: 'pessimistic' },
         ],
         'categories:best-practices': [
-          'error',
+          'warn',
           { minScore: 1, aggregationMethod: 'pessimistic' },
         ],
         'categories:seo': [
-          'error',
+          'warn',
           { minScore: 1, aggregationMethod: 'pessimistic' },
         ],
       },
