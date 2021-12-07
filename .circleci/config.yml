@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   sonarcloud: sonarsource/sonarcloud@1.0.1
+  ighthouse-check: foo-software/lighthouse-check@0.0.13
 
 jobs:
   build:
@@ -16,9 +17,9 @@ jobs:
       - run:
           name: Build
           command: npm run build
-      - run:
-          name: Lighthouse
-          command: npm run lighthouse
+      #- run:
+          #name: Lighthouse
+          #command: npm run lighthouse
 
 workflows:
   main:
