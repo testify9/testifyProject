@@ -7,6 +7,7 @@ orbs:
 jobs:
   build:
     docker:
+      # - image: cimg/14.18.2-browsers
       - image: circleci/node:14
     steps:
       - checkout
@@ -19,7 +20,7 @@ jobs:
           command: npm run build
       - run:  
           name: Install lhci 
-          command: npm install -g @lhci/cli@0.8.x
+          command: npm install @lhci/cli@0.8.x
       - run: 
           name: Run lhci
           command: lhci autorun
