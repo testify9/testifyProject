@@ -3,7 +3,8 @@ version: 2.1
 orbs:
   sonarcloud: sonarsource/sonarcloud@1.0.1
   browser-tools: circleci/browser-tools@1.2.3
-
+  github-cli: circleci/github-cli@1.0.5
+  
 jobs:
   build:
     docker:
