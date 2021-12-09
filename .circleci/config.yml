@@ -22,7 +22,7 @@ jobs:
         - image: cimg/node:14.18.2-browsers
       steps:
         - checkout
-        - run: npm install
+        - run: npm ci
         - run:  
             name: Install lhci 
             command: sudo npm install -g @lhci/cli@0.8.x
