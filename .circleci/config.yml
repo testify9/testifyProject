@@ -20,7 +20,7 @@ jobs:
       - save_cache:
           paths:
             - dist/*
-            - .lighthouserc.js
+            - lighthouserc.js
           key: lh-cache
   lighthouse:
       docker:
