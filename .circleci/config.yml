@@ -35,4 +35,6 @@ workflows:
     jobs:
       - build:
           context: SonarCloud
-      - lighthouse
+      - lighthouse:
+          requires: 
+            - build
