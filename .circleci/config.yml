@@ -23,14 +23,14 @@ jobs:
             - .npm
             - dist
             - lighthouserc.js
-          key: dependencies-cache-{{ checksum "dist" }}
+          key: dependencies-cache-{{ checksum 123 }}
   lighthouse:
       docker:
         - image: cimg/node:14.18.2-browsers   
       steps:
         - restore_cache:
             keys:
-              - dependencies-cache-{{ checksum "dist" }}
+              - dependencies-cache-{{ checksum 123 }}
         - run:  
             name: Install lhci 
             command: sudo npm install -g @lhci/cli@0.8.x
