@@ -34,7 +34,7 @@ workflows:
       #    context: SonarCloud
       - github-cli/release:
           tag: 1.0.0
-          title: test tag
+          title: test tagddd
           prerelease: true
           #requires: 
           #  - build
