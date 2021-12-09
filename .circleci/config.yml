@@ -17,28 +17,11 @@ jobs:
       - run:
           name: Build
           command: npm run build
-      - save_cache:
-          # Save the npm dependency cache
-          paths:
-            - .npm
-          key: v1-dependencies-cache
-      - save_cache:
-          # Save the nx/ng computational caches
-          paths:
-            # Cache location of the nx command
-            - node_modules/.cache
-            # dist folder is needed to cache the actual output
-            - dist
-          key: v1-computational-cache
   lighthouse:
       docker:
         - image: cimg/node:14.18.2-browsers   
       steps:
         - checkout
-        - restore_cache:
-            keys:
-              - v1-dependencies-cache
-              - v1-computational-cache
         - run:  
             name: Install lhci 
             command: sudo npm install -g @lhci/cli@0.8.x
