@@ -17,17 +17,18 @@ jobs:
       - run:
           name: Build
           command: npm run build
-      - persist_to_workspace:
-          root: .
+      - save_cache:
           paths:
             - dist/*
-            - Dockerfile
-            - VERSION
             - .lighthouserc.js
+          key: lh-cache
   lighthouse:
       docker:
         - image: cimg/node:14.18.2-browsers   
       steps:
+        - restore_cache:
+            keys:
+              - lh-cache
         - run:  
             name: Install lhci 
             command: sudo npm install -g @lhci/cli@0.8.x
