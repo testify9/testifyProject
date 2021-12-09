@@ -19,6 +19,8 @@ jobs:
           command: npm run build
       - save_cache:
           paths:
+            - node_modules
+            - .npm
             - dist/*
             - lighthouserc.js
           key: lh-cache
