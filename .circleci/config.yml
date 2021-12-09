@@ -3,7 +3,6 @@ version: 2.1
 orbs:
   sonarcloud: sonarsource/sonarcloud@1.0.1
   browser-tools: circleci/browser-tools@1.2.3
-  github-cli: circleci/github-cli@1.0.5
   
 jobs:
   build:
@@ -30,13 +29,5 @@ jobs:
 workflows:
   main:
     jobs:
-      #- build:
-      #    context: SonarCloud
-      - github-cli/release:
-          tag: 1.0.1
-          title: test tagddd
-          prerelease: true
-          #requires: 
-          #  - build
-          context:
-            - SonarCloud
+      - build:
+          context: SonarCloud
