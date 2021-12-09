@@ -17,6 +17,13 @@ jobs:
       - run:
           name: Build
           command: npm run build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - dist/*
+            - Dockerfile
+            - VERSION
+            - .lighthouserc.js
   lighthouse:
       docker:
         - image: cimg/node:14.18.2-browsers   
