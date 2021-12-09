@@ -7,7 +7,7 @@ orbs:
 jobs:
   build:
     docker:
-      - image: cimg/node:14.18.2-browsers
+      - image: cimg/node:14.18.2
     steps:
       - checkout
       - sonarcloud/scan
@@ -17,14 +17,18 @@ jobs:
       - run:
           name: Build
           command: npm run build
-      - run:  
-          name: Install lhci 
-          command: sudo npm install -g @lhci/cli@0.8.x
-      - browser-tools/install-chrome
-      - browser-tools/install-chromedriver
-      - run: 
-          name: Run lhci
-          command: lhci autorun
+  lighthouse:
+      docker:
+        - image: cimg/node:14.18.2-browsers   
+      steps:
+        - run:  
+            name: Install lhci 
+            command: sudo npm install -g @lhci/cli@0.8.x
+        - browser-tools/install-chrome
+        - browser-tools/install-chromedriver
+        - run: 
+            name: Run lhci
+            command: lhci autorun
 
 workflows:
   main:
