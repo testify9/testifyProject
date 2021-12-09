@@ -30,13 +30,12 @@ jobs:
 workflows:
   main:
     jobs:
-      - build:
-          context: SonarCloud
+      #- build:
+      #    context: SonarCloud
       - github-cli/release:
-          notes-file: changelog.md
           tag: 1.0.0
           title: test tag
-          requires:
-            - build
+          #requires:
+          #  - build
           context:
             - SonarCloud
