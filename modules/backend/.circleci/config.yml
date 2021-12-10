@@ -1,0 +1,27 @@
+# Config dedicated for module A
+# All the resources must be prefixed with `module-a-` to avoid conflicts
+
+version: 2.1
+
+orbs:
+  module-backend-aws-ecr: circleci/aws-ecr@6.15.3
+
+jobs:
+  aws-dummy-backend:
+    steps:
+      - run: echo "Backed deploy"
+  deploy-backend:
+    docker:
+      - image: cimg/node:14.18.2
+    steps:
+      - spinnaker-deployment:
+          spinnaker-module: "backend"
+
+workflows:
+  backend-workflow:
+    jobs:
+      - aws-dummy-backend:
+          name: aws-ecr-image-backend
+      - deploy-backend:
+          requires:
+            - aws-ecr-image-backend

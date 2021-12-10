@@ -1,21 +1,25 @@
 version: 2.1
+
 setup: true
+
 orbs:
   continuation: circleci/continuation@0.1.0
+
+
+# Common jobs for the main workflows
 jobs:
-  generate-config:
-    executor: continuation/default
+  common-pre:
+    docker:
+      - image: cimg/node:14.18.2
     steps:
-      - checkout
-      - run: 
-          name: Generate Pipeline generated_config.yml file
-          command: |
-            chmod +x ./scripts/generate-pipeline-config
-            ./scripts/generate-pipeline-config
-      - continuation/continue:
-          parameters: '{}'
-          configuration_path: configs/generated_config.yml
+      - run: echo 'Jobs with `common-` prefix are intended to be shared among modules'
+
 workflows:
   setup-workflow:
     jobs:
-      - generate-config
+      - config-splitting/setup-dynamic-config:
+          force-all: << pipeline.parameters.force-all >>
+          base-revision: main
+          modules: |
+            backend
+            frontend
