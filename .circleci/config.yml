@@ -115,6 +115,9 @@ orbs:
           - image: cimg/node:14.18.2
         steps:
           - checkout
+          - run:
+              name: Install yq
+              command: pip install yq
           - check-for-changes:
               modules: << parameters.modules >>
               modules-filtered: << parameters.modules-filtered >>
