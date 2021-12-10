@@ -9,7 +9,8 @@ npm ci
 # check for changes affecting frontend / backend
 frontend=false
 backend=false
-OUTPUT=$(nx affected:apps)
+#OUTPUT=$(nx affected:apps)
+OUTPUT="frontend/backend"
 if [[ $OUTPUT == *"frontend"* ]]
 then
     frontend=true
