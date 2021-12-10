@@ -1,0 +1,204 @@
+# CircleCI 2.1 configuration file
+# Using the Orb aws-ecr to push the Docker Image to ECR: https://circleci.com/orbs/registry/orb/circleci/aws-ecr
+# Using the Orb sonarcloud to analyse project with SonarQube: https://circleci.com/developer/orbs/orb/sonarsource/sonarcloud
+
+version: 2.1
+
+orbs:
+  aws-ecr: circleci/aws-ecr@6.15.3
+  sonarcloud: sonarsource/sonarcloud@1.0.2
+  ms-teams: cloudradar-monitoring/ms-teams@0.0.1
+
+parameters:
+  test:
+    type: string
+    default: acv
+
+executors:
+  node-executor:
+    docker:
+      - image: cimg/node:14.18.2
+
+base_build_job_config: &base_build_job_config
+  context: SonarCloud
+
+base_job_config: &base_job_config
+  <<: *base_build_job_config
+
+
+
+
+workflows:
+  version: 2
+  contentpool2-ci:
+    jobs:
+      - build:
+          <<: *base_build_job_config
+      - aws-ecr/build-and-push-image:
+          <<: *base_job_config
+          name: aws-ecr-image-frontend
+          dockerfile: apps/frontend/Dockerfile
+          attach-workspace: true
+          account-url: ECR_PUSH_URL
+          aws-access-key-id: ECR_PUSH_ACCESS_KEY
+          aws-secret-access-key: ECR_PUSH_SECRET
+          create-repo: false
+          region: ECR_PUSH_REGION
+          repo: cp/contentpool2frontend
+          tag: "$(cat VERSION)"
+          extra-build-args: "--build-arg RBMH_ARTIFACTORY_USERNAME=${RBMH_ARTIFACTORY_USERNAME} --build-arg RBMH_ARTIFACTORY_EMAIL=${RBMH_ARTIFACTORY_EMAIL} --build-arg RBMH_ARTIFACTORY_PASSWORD=${RBMH_ARTIFACTORY_PASSWORD} --build-arg BRANCH=${CIRCLE_BRANCH}"
+          requires:
+            - build
+      - deploy-frontend:
+          <<: *base_job_config
+          requires:
+            - aws-ecr-image-frontend
+      - aws-ecr/build-and-push-image:
+          <<: *base_job_config
+          name: aws-ecr-image-backend
+          dockerfile: apps/backend/Dockerfile
+          attach-workspace: true
+          account-url: ECR_PUSH_URL
+          aws-access-key-id: ECR_PUSH_ACCESS_KEY
+          aws-secret-access-key: ECR_PUSH_SECRET
+          create-repo: false
+          region: ECR_PUSH_REGION
+          repo: cp/contentpool2backend
+          tag: "$(cat VERSION)"
+          extra-build-args: "--build-arg RBMH_ARTIFACTORY_USERNAME=${RBMH_ARTIFACTORY_USERNAME} --build-arg RBMH_ARTIFACTORY_EMAIL=${RBMH_ARTIFACTORY_EMAIL} --build-arg RBMH_ARTIFACTORY_PASSWORD=${RBMH_ARTIFACTORY_PASSWORD} --build-arg BRANCH=${CIRCLE_BRANCH}"
+          requires:
+            - build
+      - deploy-backend:
+          <<: *base_job_config
+          requires:
+            - aws-ecr-image-backend
+
+commands:
+  spinnaker-deployment:
+    parameters:
+      spinnaker-module:
+        type: string
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Populate Env
+          command: |
+            SPINNAKER_ENV=design
+            if [ "$CIRCLE_BRANCH" = "staging" ]; then
+              SPINNAKER_ENV=staging
+            elif [ "$CIRCLE_BRANCH" = "production" ]; then
+              SPINNAKER_ENV=release
+            fi
+            echo "export SPINNAKER_ENV=$SPINNAKER_ENV" >> $BASH_ENV
+      - run:
+          name: Deploy to Spinnaker
+          command: |
+            VERSION=`cat VERSION`
+            SPINNAKER_MODULE=`echo <<parameters.spinnaker-module>>`
+            SPINNAKER_ENDPOINT="https://spinnaker-api.redbullmediahouse.com/webhooks/webhook/cpcontentpool2-$SPINNAKER_MODULE-$SPINNAKER_ENV"
+            JSON_CONTENT="{ \"artifacts\": [ { \"name\": \"148880244575.dkr.ecr.eu-central-1.amazonaws.com/cp/contentpool2$SPINNAKER_MODULE\", \"type\": \"docker/image\", \"reference\": \"148880244575.dkr.ecr.eu-central-1.amazonaws.com/cp/contentpool2$SPINNAKER_MODULE:$VERSION\", \"version\": \"$VERSION\" } ] }"
+            echo "Uploading to Spinnaker using endpoint $SPINNAKER_ENDPOINT and content $JSON_CONTENT"
+            curl $SPINNAKER_ENDPOINT -X POST -H "content-type: application/json" -d "$JSON_CONTENT"
+      - ms-teams/report:
+          webhook_url: << pipeline.parameters.ms-teams-webhook >>
+
+jobs:
+  build:
+    executor: node-executor
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            # Always use the same npm-cache - no matter the package.json etc.
+            - v1-dependencies-cache
+      - run:
+          name: Define current base
+          command: |
+              BASE=main
+              if [ "$CIRCLE_BRANCH" = "main" ]; then
+                BASE=main~1
+              elif [ "$CIRCLE_BRANCH" = "production" ]; then
+                BASE=production~1
+              fi
+              echo "export BASE=$BASE" >> $BASH_ENV
+              echo $BASE
+      - run:
+          name: Create .npmrc
+          command: cp .npmrc.template .npmrc
+      - run:
+          name: Install node dependencies
+          # Set the cache folder to be the .npm folder in the project root
+          # before installing dependencies
+          command: |
+            npm set cache .npm
+            npm ci
+      - run:
+          name: Post install
+          command: npm run postinstall
+      - restore_cache:
+          keys:
+            # Computational cache used by nx and Angular
+            - v1-computational-cache
+      - run:
+          name: Create a dummy .env file to be able to run the tests
+          command: touch .env
+      - run:
+          name: Run Linter on affected projects
+          command: |
+            echo $BASE
+            ./node_modules/.bin/nx affected --target=lint --base=$BASE --maxWarnings=100
+      - run:
+          name: Test affected projects
+          command: ./node_modules/.bin/nx affected --target=test --base=$BASE --coverage --maxWorkers=1
+      - sonarcloud/scan
+      - run:
+          name: Build affected frontend / backend
+          command: ./node_modules/.bin/nx affected --base=$BASE --target=build --prod
+      - run:
+          name: Build server side of frontend
+          command: ./node_modules/.bin/nx server frontend --prod
+      - run:
+          name: Store the version
+          command: |
+            export BUILD_VERSION=$(git rev-parse --abbrev-ref HEAD)-$(git rev-parse --short HEAD)
+            echo "$BUILD_VERSION-$CIRCLE_BUILD_NUM" > VERSION
+            echo "Stored version " `cat VERSION`
+      - save_cache:
+          # Save the npm dependency cache
+          paths:
+            - .npm
+            # Cypress installs to ~/.cache
+            - ~/.cache
+          key: v1-dependencies-cache
+      - save_cache:
+          # Save the nx/ng computational caches
+          paths:
+            # Cache location of the nx command
+            - node_modules/.cache
+            # Cache location of the ng command
+            - .angular
+            # dist folder is needed to cache the actual output
+            - dist
+          key: v1-computational-cache
+      - persist_to_workspace:
+          root: .
+          paths:
+            - dist/*
+            - VERSION
+            - .npmrc
+      - ms-teams/report:
+          only_on_fail: true
+          webhook_url: << pipeline.parameters.ms-teams-webhook >>
+
+  deploy-backend:
+    executor: node-executor
+    steps:
+      - spinnaker-deployment:
+          spinnaker-module: "backend"
+
+  deploy-frontend:
+    executor: node-executor
+    steps:
+      - spinnaker-deployment:
+          spinnaker-module: "frontend"
