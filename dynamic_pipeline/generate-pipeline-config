@@ -5,7 +5,7 @@ echo "Running script to generate pipeline config"
 
 # check for changes affecting frontend / backend
 #OUTPUT=$(nx affected:apps)
-OUTPUT="frontend/backend"
+OUTPUT="frontend/backend" 
 
 # create new config.yml file for pipeline
 cd dynamic_pipeline
