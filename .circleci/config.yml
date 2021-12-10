@@ -95,7 +95,9 @@ orbs:
           - run: npm i merge-yaml
           - run:
               name: Merge configs
-              command: mergeYaml(<< parameters.modules >>)
+              command: |
+                ls << parameters.modules >>
+                mergeYaml(<< parameters.modules >>)
 
     jobs:
       # The job for the setup workflow
