@@ -20,6 +20,7 @@ orbs:
           - image: cimg/node:14.18.2
         steps:
           - checkout
+          - 
           - check-for-changes-merge-configs
           - continuation/continue:
               configuration_path: ./dynamic_pipeline/configs/generated_config.yml

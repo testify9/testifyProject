@@ -1,25 +1,28 @@
 #!/bin/bash 
 set -o pipefail
 
-echo "Runngin script to generate pipeline config"
-npm --version
+echo "Running script to generate pipeline config"
+
+# install needed dependencies
 npm ci
 
 cd dynamic_pipeline
 mkdir configs/
 touch configs/generated_config.yml
+cd ..
 
+# check for changes affecting frontend / backend
 frontend=false
 backend=false
+OUTPUT=$(nx affected:apps)
+if [[ $OUTPUT == *"frontend"* ]]
+then
+    frontend=true
+if [[ $OUTPUT == *"backend"* ]]
+then
+    backend=true
+fi
 
-# check parameter count and assign to frontend / backend variables
-while [ $# -gt 0 ]; do
-  if [[ $1 == *"--"* ]]; then
-      param="${1/--/}"
-      declare $param=true
-  fi
-  shift
-done
 
 cat elements/head.yml > configs/generated_config.yml
 cat elements/build.yml >> configs/generated_config.yml
