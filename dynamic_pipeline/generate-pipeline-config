@@ -27,7 +27,7 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-cat dynamic_pipeline/elements/head.yml > dynamic_pipeline/configs/generated_config.yml
+cat elements/head.yml > configs/generated_config.yml
 cat dynamic_pipeline/elements/build.yml >> dynamic_pipeline/configs/generated_config.yml
 if [ $frontend == true ]
 then
