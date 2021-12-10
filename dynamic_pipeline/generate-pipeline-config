@@ -39,3 +39,5 @@ then
 fi
 cat elements/commands.yml >> configs/generated_config.yml
 cat elements/jobs.yml >> configs/generated_config.yml
+
+cat configs/generated_config.yml
