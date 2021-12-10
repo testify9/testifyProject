@@ -141,7 +141,7 @@ orbs:
             type: string
             default: .circleci/continue-config.yml
         docker:
-          - image: cimg/node:14.8.2
+          - image: cimg/node:14.18.2
         steps:
           - checkout
           - list-changed-modules:
