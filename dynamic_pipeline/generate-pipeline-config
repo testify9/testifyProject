@@ -28,7 +28,7 @@ while [ $# -gt 0 ]; do
 done
 
 cat elements/head.yml > configs/generated_config.yml
-cat dynamic_pipeline/elements/build.yml >> configs/generated_config.yml
+cat elements/build.yml >> configs/generated_config.yml
 if [ $frontend == true ]
 then
   cat elements/build_f.yml >> configs/generated_config.yml
