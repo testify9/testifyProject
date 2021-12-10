@@ -5,7 +5,6 @@ echo "Running script to generate pipeline config"
 
 # install needed dependencies
 npm ci
-npm install nx
 
 # check for changes affecting frontend / backend
 frontend=false
