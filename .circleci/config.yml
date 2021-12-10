@@ -10,7 +10,7 @@ orbs:
     commands:
       check-for-changes-merge-configs:
         steps:
-          -run: echo "mergin"
+          - run: echo "mergin"
 
     jobs:
       setup-dynamic-config:
