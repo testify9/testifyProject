@@ -52,6 +52,25 @@ orbs:
     jobs:
       setup-dynamic-config:
         parameters:
+          modules:
+            description: Directories which should be tested for changes; one directory per line. Each directory must have `.circleci/config.yml`.
+            type: string
+          base-revision:
+            description: Revision to compare with the current HEAD
+            type: string
+            default: main
+          force-all:
+            description: Emergency valve - forcibly build all the modules
+            type: boolean
+            default: false
+          modules-filtered:
+            description: Path to the file where the filtered list of modules is generated
+            type: string
+            default: /tmp/modules-filtered.txt
+          shared-config:
+            description: Path to the config providing shared resources (such as prerequisite jobs and common commands)
+            type: string
+            default: .circleci/config.yml
           continue-config:
             description: Path to the internally-used config for continuation
             type: string
