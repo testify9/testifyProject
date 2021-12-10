@@ -12,7 +12,7 @@ executors:
       - image: cimg/node:14.18.2
 
 base_build_job_config: &base_build_job_config
+  context: SonarCloud
 
 base_job_config: &base_job_config
   <<: *base_build_job_config
-
