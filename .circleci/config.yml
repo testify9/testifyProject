@@ -11,7 +11,9 @@ orbs:
     commands:
       check-for-changes:
         steps:
-          - run: echo "Call script, make nx affected check and build config yml"
+          - run: |
+            echo "Call script, make nx affected check and build config yml"
+            npm --version
       merge-modular-configs:
         parameters:
           modules:
