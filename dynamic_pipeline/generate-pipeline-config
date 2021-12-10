@@ -4,18 +4,8 @@ set -o pipefail
 echo "Running script to generate pipeline config"
 
 # check for changes affecting frontend / backend
-frontend=false
-backend=false
 #OUTPUT=$(nx affected:apps)
 OUTPUT="frontend/backend"
-if [[ $OUTPUT == *"frontend"* ]]
-then
-    frontend=true
-fi
-if [[ $OUTPUT == *"backend"* ]]
-then
-    backend=true
-fi
 
 # create new config.yml file for pipeline
 cd dynamic_pipeline
@@ -25,13 +15,13 @@ touch configs/generated_config.yml
 # fill config based on changes
 cat elements/head.yml > configs/generated_config.yml
 cat elements/build.yml >> configs/generated_config.yml
-if [ $frontend == true ]
+if [[ $OUTPUT == *"frontend"* ]]
 then
-  cat elements/build_f.yml >> configs/generated_config.yml
+    cat elements/build_f.yml >> configs/generated_config.yml
 fi
-if [ $backend == true ]
+if [[ $OUTPUT == *"backend"* ]]
 then
-  cat elements/build_b.yml >> configs/generated_config.yml
+    cat elements/build_b.yml >> configs/generated_config.yml
 fi
 cat elements/commands.yml >> configs/generated_config.yml
 cat elements/jobs.yml >> configs/generated_config.yml
