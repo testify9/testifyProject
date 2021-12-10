@@ -3,6 +3,7 @@ set -o pipefail
 
 echo "Runngin script to generate pipeline config"
 npm --version
+npm ci
 
 cd dynamic_pipeline
 mkdir configs/
