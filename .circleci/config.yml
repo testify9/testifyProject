@@ -96,8 +96,7 @@ orbs:
           - run:
               name: Merge configs
               command: |
-                readarray -t a < << parameters.modules >>
-                mergeYaml(a)
+                mergeYaml(['modules/backend/.circleci/config.yml', 'modules/frontend/.circleci/config.yml'])
 
     jobs:
       # The job for the setup workflow
