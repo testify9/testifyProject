@@ -14,8 +14,8 @@ jobs:
     docker:
       - image: cimg/node:14.18.2
     steps:
-      - spinnaker-deployment:
-          spinnaker-module: "backend"
+      - run: echo "Deployed Backend"
+
 
 workflows:
   backend-workflow:

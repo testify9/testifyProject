@@ -14,8 +14,7 @@ jobs:
     docker:
       - image: cimg/node:14.18.2
     steps:
-      - spinnaker-deployment:
-          spinnaker-module: "frontend"
+      - run: echo "Deployed Frontend"
 
 workflows:
   frontend-workflow:
