@@ -10,7 +10,7 @@ parameters:
   force-all:
     description: Emergency valve - forcibly build all the modules
     type: boolean
-    default: true
+    default: false
 
 orbs:
   config-splitting:
@@ -119,7 +119,7 @@ orbs:
               modules: << parameters.modules >>
               modules-filtered: << parameters.modules-filtered >>
               base-revision: << parameters.base-revision >>
-              force-all: << parameters.force-all >>
+              force-all: true
           - merge-configs:
               modules: << parameters.modules-filtered >>
               shared-config: << parameters.shared-config >>
