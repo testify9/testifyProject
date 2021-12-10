@@ -11,6 +11,7 @@ OUTPUT="frontend/backend"
 if [[ $OUTPUT == *"frontend"* ]]
 then
     frontend=true
+fi
 if [[ $OUTPUT == *"backend"* ]]
 then
     backend=true
