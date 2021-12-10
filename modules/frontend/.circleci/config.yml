@@ -10,11 +10,15 @@ jobs:
   aws-dummy-frontend:
     steps:
       - run: echo "Frontend deploy"
+    requires:
+      - common-pre
   deploy-frontend:
     docker:
       - image: cimg/node:14.18.2
     steps:
       - run: echo "Deployed Frontend"
+    requires:
+      - aws-dummy-frontend
 
 workflows:
   frontend-workflow:

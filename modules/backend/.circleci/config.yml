@@ -10,12 +10,15 @@ jobs:
   aws-dummy-backend:
     steps:
       - run: echo "Backed deploy"
+    requires:
+      - common-pre
   deploy-backend:
     docker:
       - image: cimg/node:14.18.2
     steps:
       - run: echo "Deployed Backend"
-
+    requires:
+      - aws-dummy-backend
 
 workflows:
   backend-workflow:

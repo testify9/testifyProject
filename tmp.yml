@@ -1,166 +1,193 @@
-# CircleCI 2.1 configuration file
-# Using the Orb aws-ecr to push the Docker Image to ECR: https://circleci.com/orbs/registry/orb/circleci/aws-ecr
-# Using the Orb sonarcloud to analyse project with SonarQube: https://circleci.com/developer/orbs/orb/sonarsource/sonarcloud
-
 version: 2.1
-orbs:
-  aws-ecr: circleci/aws-ecr@6.15.3
-  sonarcloud: sonarsource/sonarcloud@1.0.2
-  ms-teams: cloudradar-monitoring/ms-teams@0.0.1
+
+setup: << pipeline.parameters.run-setup >>
 
 parameters:
-  ms-teams-webhook:
-    type: string
-    default: https://redbull.webhook.office.com/webhookb2/ee97ba59-c78d-415e-b952-99adaf863929@a01b3b4a-1448-4fe9-b967-00927abe0460/IncomingWebhook/24750adfa5da4a788ea6b77efc2a5bbf/8fa224d3-8172-4070-a247-7493fbbf208a
+  run-setup:
+    description: Whether it is a setup workflow or a continuation
+    type: boolean
+    default: true
+  force-all:
+    description: Emergency valve - forcibly build all the modules
+    type: boolean
+    default: false
+    
+orbs:
+  module-backend-aws-ecr: circleci/aws-ecr@6.15.3
+  module-frontend-aws-ecr: circleci/aws-ecr@6.15.3
 
-executors:
-  node-executor:
-    docker:
-      - image: cimg/node:14.18.2
+  config-splitting:
+    orbs:
+      continuation: circleci/continuation@0.1.2
+    commands:
+      check-for-changes:
+        parameters:
+          modules:
+            description: 'Directories which should be built upon changes.
 
-base_build_job_config: &base_build_job_config
-  context: rbcp
+              Each row represents a space-separated list of the root directories for
+              modules, each of which must has own `.circleci/config.yml`.
 
-base_job_config: &base_job_config
-  <<: *base_build_job_config
-  filters:
-    branches:
-      only:
-        - main
-        - production
+              The first item of the list will be tested for changes, and will be added
+              to the filtered list of modules if there are any changes.
 
-workflows:
-  version: 2
-  contentpool2-ci:
+              The subsequent items, if there are any, will also be added to the filtered
+              list of modules if there are any changes in the directory specified
+              as the first item.
+
+
+              CAVEAT: Directory names having white spaces cannot be specified.
+
+              '
+            type: string
+          modules-filtered:
+            description: Path to the file where the filtered list of modules is generated
+            type: string
+            default: /tmp/modules-filtered.txt
+          base-revision:
+            description: Revision to compare with the current HEAD
+            type: string
+            default: main
+          force-all:
+            description: Emergency valve - forcibly build all the modules
+            type: boolean
+            default: false
+        steps:
+          - run: 'echo "Call script, make nx affected check and build config yml"
+
+              cat \<< EOD | sed -e ''/^$/d'' | while read row; do module="$(echo "$row"
+              | awk ''{ print $1 }'')"; if [ << parameters.force-all >> == ''true''
+              ] || [ $(git diff --name-only << parameters.base-revision >> "$module"
+              | wc -l) -gt 0 ] || (! git rev-parse --verify HEAD~1) || [ $(git diff
+              --name-only HEAD~1 "$module" | wc -l) -gt 0 ]; then echo "$row" | sed
+              -e ''s/ /\n/g'' >> << parameters.modules-filtered >>; fi; done
+
+              << parameters.modules >>
+
+              EOD
+
+              '
+      merge-configs:
+        parameters:
+          modules:
+            description: Path to the file for the list of the modules to build
+            type: string
+            default: /tmp/modules-filtered.txt
+          shared-config:
+            description: Path to the config providing shared resources (such as prerequisite
+              jobs and common commands)
+            type: string
+            default: .circleci/config.yml
+          continue-config:
+            description: Path to the internally-used config for continuation
+            type: string
+            default: .circleci/continue-config.yml
+        steps:
+          - run:
+              name: Merge configs
+              command: "# If `modules` is unavailable, stop this job without continuation\n\
+                if [ ! -f \"<< parameters.modules >>\" ] || [ ! -s \"<< parameters.modules\
+                \ >>\" ]\nthen\n  echo 'Nothing to merge. Halting the job.'\n  circleci-agent\
+                \ step halt\n  exit\nfi\n\n# Convert a list of dirs to a list of config.yml\n\
+                sed -i -e 's/$/\\/.circleci\\/config.yml/g' \"<< parameters.modules\
+                \ >>\"\n\n# If `shared-config` exists, append it at the end of `modules`\n\
+                if [ -f << parameters.shared-config >> ]\nthen\n  echo \"<< parameters.shared-config\
+                \ >>\" >> \"<< parameters.modules >>\"\nfi\n\nxargs -a \"<< parameters.modules\
+                \ >>\" yq -y -s 'reduce .[] as $item ({}; . * $item)' | tee \"<< parameters.continue-config\
+                \ >>\"\n"
     jobs:
-      - build:
-          <<: *base_build_job_config
-commands:
-  spinnaker-deployment:
-    parameters:
-      spinnaker-module:
-        type: string
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          name: Populate Env
-          command: |
-            SPINNAKER_ENV=design
-            if [ "$CIRCLE_BRANCH" = "staging" ]; then
-              SPINNAKER_ENV=staging
-            elif [ "$CIRCLE_BRANCH" = "production" ]; then
-              SPINNAKER_ENV=release
-            fi
-            echo "export SPINNAKER_ENV=$SPINNAKER_ENV" >> $BASH_ENV
-      - run:
-          name: Deploy to Spinnaker
-          command: |
-            VERSION=`cat VERSION`
-            SPINNAKER_MODULE=`echo <<parameters.spinnaker-module>>`
-            SPINNAKER_ENDPOINT="https://spinnaker-api.redbullmediahouse.com/webhooks/webhook/cpcontentpool2-$SPINNAKER_MODULE-$SPINNAKER_ENV"
-            JSON_CONTENT="{ \"artifacts\": [ { \"name\": \"148880244575.dkr.ecr.eu-central-1.amazonaws.com/cp/contentpool2$SPINNAKER_MODULE\", \"type\": \"docker/image\", \"reference\": \"148880244575.dkr.ecr.eu-central-1.amazonaws.com/cp/contentpool2$SPINNAKER_MODULE:$VERSION\", \"version\": \"$VERSION\" } ] }"
-            echo "Uploading to Spinnaker using endpoint $SPINNAKER_ENDPOINT and content $JSON_CONTENT"
-            curl $SPINNAKER_ENDPOINT -X POST -H "content-type: application/json" -d "$JSON_CONTENT"
-      - ms-teams/report:
-          webhook_url: << pipeline.parameters.ms-teams-webhook >>
+      setup-dynamic-config:
+        parameters:
+          modules:
+            description: Directories which should be tested for changes; one directory
+              per line. Each directory must have `.circleci/config.yml`.
+            type: string
+          modules-filtered:
+            description: Path to the file where the filtered list of modules is generated
+            type: string
+            default: /tmp/modules-filtered.txt
+          base-revision:
+            description: Revision to compare with the current HEAD
+            type: string
+            default: main
+          force-all:
+            description: Emergency valve - forcibly build all the modules
+            type: boolean
+            default: false
+          shared-config:
+            description: Path to the config providing shared resources (such as prerequisite
+              jobs and common commands)
+            type: string
+            default: .circleci/config.yml
+          continue-config:
+            description: Path to the internally-used config for continuation
+            type: string
+            default: .circleci/continue-config.yml
+        docker:
+          - image: cimg/python:3.9
+        steps:
+          - checkout
+          - run:
+              name: Install yq
+              command: pip install yq
+          - check-for-changes:
+              modules: << parameters.modules >>
+              modules-filtered: << parameters.modules-filtered >>
+              base-revision: << parameters.base-revision >>
+              force-all: true
+          - merge-configs:
+              modules: << parameters.modules-filtered >>
+              shared-config: << parameters.shared-config >>
+              continue-config: << parameters.continue-config >>
+          - continuation/continue:
+              configuration_path: << parameters.continue-config >>
+              parameters: '{"run-setup":false}'
 
 jobs:
-  build:
-    executor: node-executor
+  aws-dummy-backend:
     steps:
-      - checkout
-      - restore_cache:
-          keys:
-            # Always use the same npm-cache - no matter the package.json etc.
-            - v1-dependencies-cache
-      - run:
-          name: Define current base
-          command: |
-              BASE=main
-              if [ "$CIRCLE_BRANCH" = "main" ]; then
-                BASE=main~1
-              elif [ "$CIRCLE_BRANCH" = "production" ]; then
-                BASE=production~1
-              fi
-              echo "export BASE=$BASE" >> $BASH_ENV
-              echo $BASE
-      - run:
-          name: Create .npmrc
-          command: cp .npmrc.template .npmrc
-      - run:
-          name: Install node dependencies
-          # Set the cache folder to be the .npm folder in the project root
-          # before installing dependencies
-          command: |
-            npm set cache .npm
-            npm ci
-      - run:
-          name: Post install
-          command: npm run postinstall
-      - restore_cache:
-          keys:
-            # Computational cache used by nx and Angular
-            - v1-computational-cache
-      - run:
-          name: Create a dummy .env file to be able to run the tests
-          command: touch .env
-      - run:
-          name: Run Linter on affected projects
-          command: |
-            echo $BASE
-            ./node_modules/.bin/nx affected --target=lint --base=$BASE --maxWarnings=100
-      - run:
-          name: Test affected projects
-          command: ./node_modules/.bin/nx affected --target=test --base=$BASE --coverage --maxWorkers=1
-      - sonarcloud/scan
-      - run:
-          name: Build affected frontend / backend
-          command: ./node_modules/.bin/nx affected --base=$BASE --target=build --prod
-      - run:
-          name: Build server side of frontend
-          command: ./node_modules/.bin/nx server frontend --prod
-      - run:
-          name: Store the version
-          command: |
-            export BUILD_VERSION=$(git rev-parse --abbrev-ref HEAD)-$(git rev-parse --short HEAD)
-            echo "$BUILD_VERSION-$CIRCLE_BUILD_NUM" > VERSION
-            echo "Stored version " `cat VERSION`
-      - save_cache:
-          # Save the npm dependency cache
-          paths:
-            - .npm
-            # Cypress installs to ~/.cache
-            - ~/.cache
-          key: v1-dependencies-cache
-      - save_cache:
-          # Save the nx/ng computational caches
-          paths:
-            # Cache location of the nx command
-            - node_modules/.cache
-            # Cache location of the ng command
-            - .angular
-            # dist folder is needed to cache the actual output
-            - dist
-          key: v1-computational-cache
-      - persist_to_workspace:
-          root: .
-          paths:
-            - dist/*
-            - VERSION
-            - .npmrc
-      - ms-teams/report:
-          only_on_fail: true
-          webhook_url: << pipeline.parameters.ms-teams-webhook >>
-
+      - run: echo "Backed deploy"
   deploy-backend:
-    executor: node-executor
+    docker:
+      - image: cimg/node:14.18.2
     steps:
-      - spinnaker-deployment:
-          spinnaker-module: "backend"
-
+      - run: echo "Deployed Backend"
+  aws-dummy-frontend:
+    steps:
+      - run: echo "Frontend deploy"
   deploy-frontend:
-    executor: node-executor
+    docker:
+      - image: cimg/node:14.18.2
     steps:
-      - spinnaker-deployment:
-          spinnaker-module: "frontend"
+      - run: echo "Deployed Frontend"
+  common-pre:
+    docker:
+      - image: cimg/node:14.18.2
+    steps:
+      - run: echo 'This would be the build process'
+
+workflows:
+  backend-workflow:
+    jobs:
+      - aws-dummy-backend:
+          name: aws-ecr-image-backend
+      - deploy-backend:
+          requires:
+            - aws-ecr-image-backend
+  frontend-workflow:
+    jobs:
+      - aws-dummy-frontend:
+          name: aws-ecr-image-frontend
+      - deploy-frontend:
+          requires:
+            - aws-ecr-image-frontend
+  setup-workflow:
+    when: << pipeline.parameters.run-setup >>
+    jobs:
+      - config-splitting/setup-dynamic-config:
+          base-revision: main
+          modules: 'modules/backend
+
+            modules/frontend'
+
+
