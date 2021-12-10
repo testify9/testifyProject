@@ -9,6 +9,7 @@ cd dynamic_pipeline
 ls
 
 mkdir configs/
+ls
 
 frontend=false
 backend=false
