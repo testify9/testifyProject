@@ -1,20 +1,51 @@
 version: 2.1
 
-setup: true
+setup: << pipeline.parameters.run-setup >>
+
+parameters:
+  run-setup:
+    description: Whether it is a setup workflow or a continuation
+    type: boolean
+    default: true
+  force-all:
+    description: Emergency valve - forcibly build all the modules
+    type: boolean
+    default: false
 
 orbs:
-
   config-splitting:
     orbs:
       continuation: circleci/continuation@0.1.2
 
     commands:
       check-for-changes:
+        parameters:
+          modules:
+            description: |
+              Directories which should be built upon changes.
+              Each row represents a space-separated list of the root directories for modules, each of which must has own `.circleci/config.yml`.
+              The first item of the list will be tested for changes, and will be added to the filtered list of modules if there are any changes.
+              The subsequent items, if there are any, will also be added to the filtered list of modules if there are any changes in the directory specified as the first item.
+
+              CAVEAT: Directory names having white spaces cannot be specified.
+            type: string
+          modules-filtered:
+            description: Path to the file where the filtered list of modules is generated
+            type: string
+            default: /tmp/modules-filtered.txt
+          base-revision:
+            description: Revision to compare with the current HEAD
+            type: string
+            default: main
+          force-all:
+            description: Emergency valve - forcibly build all the modules
+            type: boolean
+            default: false
         steps:
           - run: |
               echo "Call script, make nx affected check and build config yml"
               npm --version
-      merge-modular-configs:
+      merge-configs:
         parameters:
           modules:
             description: Path to the file for the list of the modules to build
@@ -57,6 +88,10 @@ orbs:
           modules:
             description: Directories which should be tested for changes; one directory per line. Each directory must have `.circleci/config.yml`.
             type: string
+          modules-filtered:
+            description: Path to the file where the filtered list of modules is generated
+            type: string
+            default: /tmp/modules-filtered.txt
           base-revision:
             description: Revision to compare with the current HEAD
             type: string
@@ -65,10 +100,6 @@ orbs:
             description: Emergency valve - forcibly build all the modules
             type: boolean
             default: false
-          modules-filtered:
-            description: Path to the file where the filtered list of modules is generated
-            type: string
-            default: /tmp/modules-filtered.txt
           shared-config:
             description: Path to the config providing shared resources (such as prerequisite jobs and common commands)
             type: string
@@ -80,8 +111,16 @@ orbs:
         docker:
           - image: cimg/node:14.18.2
         steps:
-          - check-for-changes
-          - merge-modular-configs
+          - checkout
+          - check-for-changes:
+              modules: << parameters.modules >>
+              modules-filtered: << parameters.modules-filtered >>
+              base-revision: << parameters.base-revision >>
+              force-all: << parameters.force-all >>
+          - merge-configs:
+              modules: << parameters.modules-filtered >>
+              shared-config: << parameters.shared-config >>
+              continue-config: << parameters.continue-config >>
           - continuation/continue:
               configuration_path: << parameters.continue-config >>
               parameters: '{"run-setup":false}'
@@ -96,6 +135,7 @@ jobs:
 
 workflows:
   setup-workflow:
+    when: << pipeline.parameters.run-setup >>
     jobs:
       - config-splitting/setup-dynamic-config:
           base-revision: main
