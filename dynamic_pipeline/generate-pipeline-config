@@ -5,6 +5,8 @@ echo "Runngin script to generate pipeline config"
 npm --version
 
 ls
+cd dynamic_pipeline
+ls
 
 mkdir configs/
 
