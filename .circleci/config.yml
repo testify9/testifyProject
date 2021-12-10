@@ -96,8 +96,8 @@ orbs:
           - run:
               name: Merge configs
               command: |
-                cat << parameters.modules >>
-                mergeYaml(<< parameters.modules >>)
+                readarray -t a < /path/to/filename
+                mergeYaml(a)
 
     jobs:
       # The job for the setup workflow
