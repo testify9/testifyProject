@@ -10,6 +10,10 @@ ls
 
 mkdir configs/
 ls
+ls configs
+touch
+generated_config.yml
+ls
 
 frontend=false
 backend=false
