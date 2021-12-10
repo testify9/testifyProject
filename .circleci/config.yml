@@ -96,7 +96,7 @@ orbs:
           - run:
               name: Merge configs
               command: |
-                ls << parameters.modules >>
+                cat << parameters.modules >>
                 mergeYaml(<< parameters.modules >>)
 
     jobs:
