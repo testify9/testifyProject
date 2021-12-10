@@ -12,7 +12,7 @@ orbs:
         steps:
           - run: |
               chmod +x ./dynamic_pipeline/generate-pipeline-config
-              ./dynamic_pipeline/generate-pipeline-config --frontend --backend
+              ./dynamic_pipeline/generate-pipeline-config
               
     jobs:
       setup-dynamic-config:
