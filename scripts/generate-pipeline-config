@@ -1,0 +1,22 @@
+#!/bin/bash 
+set -o pipefail
+
+mkdir configs/
+cat << EOF > configs/generated_config.yml
+version: 2.1
+orbs:
+  node: circleci/node@4.2.0
+
+jobs:
+  print:
+    docker:
+      - image: circleci/node:12
+    steps:
+      - checkout
+      - run: echo "hello"
+
+workflows:
+  test:
+    jobs:
+      - print
+EOF
