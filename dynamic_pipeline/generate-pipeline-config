@@ -15,15 +15,15 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-cat elements/head.yml > configs/generated_config.yml
-cat elements/build.yml >> configs/generated_config.yml
+cat ./dynamic_pipeline/elements/head.yml > ./dynamic_pipeline/configs/generated_config.yml
+cat ./dynamic_pipeline/elements/build.yml >> ./dynamic_pipeline/configs/generated_config.yml
 if [ $frontend == true ]
 then
-  cat elements/build_f.yml >> configs/generated_config.yml
+  cat ./dynamic_pipeline/elements/build_f.yml >> ./dynamic_pipeline/configs/generated_config.yml
 fi
 if [ $backend == true ]
 then
-  cat elements/build_b.yml >> configs/generated_config.yml
+  cat ./dynamic_pipeline/elements/build_b.yml >> ./dynamic_pipeline/configs/generated_config.yml
 fi
-cat elements/commands.yml >> configs/generated_config.yml
-cat elements/jobs.yml >> configs/generated_config.yml
+cat ./dynamic_pipeline/elements/commands.yml >> ./dynamic_pipeline/configs/generated_config.yml
+cat ./dynamic_pipeline/elements/jobs.yml >> ./dynamic_pipeline/configs/generated_config.yml
