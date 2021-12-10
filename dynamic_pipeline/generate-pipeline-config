@@ -6,11 +6,6 @@ echo "Running script to generate pipeline config"
 # install needed dependencies
 npm ci
 
-cd dynamic_pipeline
-mkdir configs/
-touch configs/generated_config.yml
-cd ..
-
 # check for changes affecting frontend / backend
 frontend=false
 backend=false
@@ -23,7 +18,12 @@ then
     backend=true
 fi
 
+# create new config.yml file for pipeline
+cd dynamic_pipeline
+mkdir configs/
+touch configs/generated_config.yml
 
+# fill config based on changes
 cat elements/head.yml > configs/generated_config.yml
 cat elements/build.yml >> configs/generated_config.yml
 if [ $frontend == true ]
