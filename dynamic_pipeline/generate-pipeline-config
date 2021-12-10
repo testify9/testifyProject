@@ -5,6 +5,7 @@ echo "Runngin script to generate pipeline config"
 npm --version
 
 cd dynamic_pipeline
+mkdir configs/
 touch configs/generated_config.yml
 
 frontend=false
