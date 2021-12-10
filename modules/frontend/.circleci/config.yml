@@ -23,8 +23,10 @@ jobs:
 workflows:
   frontend-workflow:
     jobs:
+      - common-pre
       - aws-dummy-frontend:
-          name: aws-ecr-image-frontend
+        requires:
+          - common-pre
       - deploy-frontend:
           requires:
-            - aws-ecr-image-frontend
+            - aws-dummy-frontend
