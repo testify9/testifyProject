@@ -3,9 +3,6 @@ set -o pipefail
 
 echo "Running script to generate pipeline config"
 
-# install needed dependencies
-npm ci
-
 # check for changes affecting frontend / backend
 frontend=false
 backend=false
