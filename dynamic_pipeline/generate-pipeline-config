@@ -18,7 +18,7 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-cat elements/head.yml > configs/generated_config.yml
+cat /elements/head.yml > configs/generated_config.yml
 cat elements/build.yml >> configs/generated_config.yml
 if [ $frontend == true ]
 then
