@@ -4,16 +4,8 @@ set -o pipefail
 echo "Runngin script to generate pipeline config"
 npm --version
 
-ls
 cd dynamic_pipeline
-ls
-
-mkdir configs/
-ls
-ls configs
-
 touch configs/generated_config.yml
-ls
 
 frontend=false
 backend=false
