@@ -5,7 +5,6 @@ setup: true
 orbs:
 
   config-splitting:
-
     orbs:
       continuation: circleci/continuation@0.1.2
 
@@ -13,21 +12,21 @@ orbs:
       check-for-changes:
         steps:
           - run: echo "Call script, make nx affected check and build config yml"
-        merge-modular-configs:
-          parameters:
-            modules:
-              description: Path to the file for the list of the modules to build
-              type: string
-              default: /tmp/modules-filtered.txt
-            shared-config:
-              description: Path to the config providing shared resources (such as prerequisite jobs and common commands)
-              type: string
-              default: .circleci/config.yml
-            continue-config:
-              description: Path to the internally-used config for continuation
-              type: string
-              default: .circleci/continue-config.yml
-          steps:
+      merge-modular-configs:
+        parameters:
+          modules:
+            description: Path to the file for the list of the modules to build
+            type: string
+            default: /tmp/modules-filtered.txt
+          shared-config:
+            description: Path to the config providing shared resources (such as prerequisite jobs and common commands)
+            type: string
+            default: .circleci/config.yml
+          continue-config:
+            description: Path to the internally-used config for continuation
+            type: string
+            default: .circleci/continue-config.yml
+        steps:
             - run:
                 name: Merge configs
                 command: |
@@ -60,7 +59,6 @@ orbs:
           - continuation/continue:
             configuration_path: << parameters.continue-config >>
             parameters: '{"run-setup":false}'
-
 
 # Common jobs for the main workflows
 jobs:
