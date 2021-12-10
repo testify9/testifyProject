@@ -11,7 +11,6 @@ orbs:
       check-for-changes-merge-configs:
         steps:
           - run: |
-              chmod +rwx ./dynamic_pipeline/elements/head.yml
               chmod +x ./dynamic_pipeline/generate-pipeline-config
               ./dynamic_pipeline/generate-pipeline-config --frontend --backend
               

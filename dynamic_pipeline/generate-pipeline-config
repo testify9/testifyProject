@@ -4,6 +4,8 @@ set -o pipefail
 echo "Runngin script to generate pipeline config"
 npm --version
 
+ls
+
 mkdir configs/
 
 frontend=false
