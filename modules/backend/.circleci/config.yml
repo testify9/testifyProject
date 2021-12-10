@@ -25,47 +25,15 @@ base_build_job_config: &base_build_job_config
 base_job_config: &base_job_config
   <<: *base_build_job_config
 
-
-
-
 workflows:
   version: 2
-  contentpool2-ci:
+  contentpool2-ci-backend:
     jobs:
       - build:
           <<: *base_build_job_config
-      - aws-ecr/build-and-push-image:
-          <<: *base_job_config
-          name: aws-ecr-image-frontend
-          dockerfile: apps/frontend/Dockerfile
-          attach-workspace: true
-          account-url: ECR_PUSH_URL
-          aws-access-key-id: ECR_PUSH_ACCESS_KEY
-          aws-secret-access-key: ECR_PUSH_SECRET
-          create-repo: false
-          region: ECR_PUSH_REGION
-          repo: cp/contentpool2frontend
-          tag: "$(cat VERSION)"
-          extra-build-args: "--build-arg RBMH_ARTIFACTORY_USERNAME=${RBMH_ARTIFACTORY_USERNAME} --build-arg RBMH_ARTIFACTORY_EMAIL=${RBMH_ARTIFACTORY_EMAIL} --build-arg RBMH_ARTIFACTORY_PASSWORD=${RBMH_ARTIFACTORY_PASSWORD} --build-arg BRANCH=${CIRCLE_BRANCH}"
-          requires:
-            - build
-      - deploy-frontend:
-          <<: *base_job_config
-          requires:
-            - aws-ecr-image-frontend
-      - aws-ecr/build-and-push-image:
+      - aws-dummy-backend:
           <<: *base_job_config
           name: aws-ecr-image-backend
-          dockerfile: apps/backend/Dockerfile
-          attach-workspace: true
-          account-url: ECR_PUSH_URL
-          aws-access-key-id: ECR_PUSH_ACCESS_KEY
-          aws-secret-access-key: ECR_PUSH_SECRET
-          create-repo: false
-          region: ECR_PUSH_REGION
-          repo: cp/contentpool2backend
-          tag: "$(cat VERSION)"
-          extra-build-args: "--build-arg RBMH_ARTIFACTORY_USERNAME=${RBMH_ARTIFACTORY_USERNAME} --build-arg RBMH_ARTIFACTORY_EMAIL=${RBMH_ARTIFACTORY_EMAIL} --build-arg RBMH_ARTIFACTORY_PASSWORD=${RBMH_ARTIFACTORY_PASSWORD} --build-arg BRANCH=${CIRCLE_BRANCH}"
           requires:
             - build
       - deploy-backend:
@@ -79,32 +47,12 @@ commands:
       spinnaker-module:
         type: string
     steps:
-      - attach_workspace:
-          at: .
       - run:
-          name: Populate Env
-          command: |
-            SPINNAKER_ENV=design
-            if [ "$CIRCLE_BRANCH" = "staging" ]; then
-              SPINNAKER_ENV=staging
-            elif [ "$CIRCLE_BRANCH" = "production" ]; then
-              SPINNAKER_ENV=release
-            fi
-            echo "export SPINNAKER_ENV=$SPINNAKER_ENV" >> $BASH_ENV
-      - run:
-          name: Deploy to Spinnaker
-          command: |
-            VERSION=`cat VERSION`
-            SPINNAKER_MODULE=`echo <<parameters.spinnaker-module>>`
-            SPINNAKER_ENDPOINT="https://spinnaker-api.redbullmediahouse.com/webhooks/webhook/cpcontentpool2-$SPINNAKER_MODULE-$SPINNAKER_ENV"
-            JSON_CONTENT="{ \"artifacts\": [ { \"name\": \"148880244575.dkr.ecr.eu-central-1.amazonaws.com/cp/contentpool2$SPINNAKER_MODULE\", \"type\": \"docker/image\", \"reference\": \"148880244575.dkr.ecr.eu-central-1.amazonaws.com/cp/contentpool2$SPINNAKER_MODULE:$VERSION\", \"version\": \"$VERSION\" } ] }"
-            echo "Uploading to Spinnaker using endpoint $SPINNAKER_ENDPOINT and content $JSON_CONTENT"
-            curl $SPINNAKER_ENDPOINT -X POST -H "content-type: application/json" -d "$JSON_CONTENT"
-      - ms-teams/report:
-          webhook_url: << pipeline.parameters.ms-teams-webhook >>
+          name: Dummy spinnaker
+          command: echo "dummy spinnaker"
 
 jobs:
-  build:
+  build-backend:
     executor: node-executor
     steps:
       - checkout
@@ -147,17 +95,13 @@ jobs:
           name: Run Linter on affected projects
           command: |
             echo $BASE
-            ./node_modules/.bin/nx affected --target=lint --base=$BASE --maxWarnings=100
+            npm lint --maxWarnings=100
       - run:
           name: Test affected projects
-          command: ./node_modules/.bin/nx affected --target=test --base=$BASE --coverage --maxWorkers=1
-      - sonarcloud/scan
+          command: npm test --coverage --maxWorkers=1
       - run:
           name: Build affected frontend / backend
-          command: ./node_modules/.bin/nx affected --base=$BASE --target=build --prod
-      - run:
-          name: Build server side of frontend
-          command: ./node_modules/.bin/nx server frontend --prod
+          command: npm build --prod
       - run:
           name: Store the version
           command: |
@@ -196,9 +140,3 @@ jobs:
     steps:
       - spinnaker-deployment:
           spinnaker-module: "backend"
-
-  deploy-frontend:
-    executor: node-executor
-    steps:
-      - spinnaker-deployment:
-          spinnaker-module: "frontend"
