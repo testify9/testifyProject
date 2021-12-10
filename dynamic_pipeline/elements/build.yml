@@ -1,0 +1,6 @@
+workflows:
+  version: 2
+  contentpool2-ci:
+    jobs:
+      - build:
+          <<: *base_build_job_config

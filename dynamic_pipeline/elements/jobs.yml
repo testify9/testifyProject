@@ -1,0 +1,18 @@
+jobs:
+  build:
+    executor: node-executor
+    steps:
+      - checkout
+      - run:
+          name: Define current base
+          command: echo "build test"
+
+  deploy-backend:
+    executor: node-executor
+    steps:
+      - run: echo "dep backend"
+
+  deploy-frontend:
+    executor: node-executor
+    steps:
+      - run: echo "dep frontend"

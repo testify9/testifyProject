@@ -1,0 +1,29 @@
+#!/bin/bash 
+set -o pipefail
+
+mkdir configs/
+
+frontend=false
+backend=false
+
+# check parameter count and assign to frontend / backend variables
+while [ $# -gt 0 ]; do
+  if [[ $1 == *"--"* ]]; then
+      param="${1/--/}"
+      declare $param=true
+  fi
+  shift
+done
+
+cat elements/head.yml > configs/generated_config.yml
+cat elements/build.yml >> configs/generated_config.yml
+if [ $frontend == true ]
+then
+  cat elements/build_f.yml >> configs/generated_config.yml
+fi
+if [ $backend == true ]
+then
+  cat elements/build_b.yml >> configs/generated_config.yml
+fi
+cat elements/commands.yml >> configs/generated_config.yml
+cat elements/jobs.yml >> configs/generated_config.yml
