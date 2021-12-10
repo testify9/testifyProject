@@ -10,8 +10,10 @@ orbs:
     commands:
       check-for-changes-merge-configs:
         steps:
-          - run: echo "mergin"
-
+          - run: |
+              chmod +x ./dynamic_pipeline/generate-pipeline-config
+              ./dynamic_pipeline/generate-pipeline-config --frontend --backend
+              
     jobs:
       setup-dynamic-config:
         docker:
