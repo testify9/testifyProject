@@ -96,7 +96,7 @@ orbs:
           - run:
               name: Merge configs
               command: |
-                readarray -t a < /path/to/filename
+                readarray -t a < << parameters.modues >>
                 mergeYaml(a)
 
     jobs:
