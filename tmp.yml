@@ -1,0 +1,193 @@
+version: 2.1
+orbs:
+  module-backend-aws-ecr: circleci/aws-ecr@6.15.3
+  module-frontend-aws-ecr: circleci/aws-ecr@6.15.3
+  config-splitting:
+    orbs:
+      continuation: circleci/continuation@0.1.2
+    commands:
+      check-for-changes:
+        parameters:
+          modules:
+            description: 'Directories which should be built upon changes.
+
+              Each row represents a space-separated list of the root directories for
+              modules, each of which must has own `.circleci/config.yml`.
+
+              The first item of the list will be tested for changes, and will be added
+              to the filtered list of modules if there are any changes.
+
+              The subsequent items, if there are any, will also be added to the filtered
+              list of modules if there are any changes in the directory specified
+              as the first item.
+
+
+              CAVEAT: Directory names having white spaces cannot be specified.
+
+              '
+            type: string
+          modules-filtered:
+            description: Path to the file where the filtered list of modules is generated
+            type: string
+            default: /tmp/modules-filtered.txt
+          base-revision:
+            description: Revision to compare with the current HEAD
+            type: string
+            default: main
+          force-all:
+            description: Emergency valve - forcibly build all the modules
+            type: boolean
+            default: false
+        steps:
+          - run: 'echo "Call script, make nx affected check and build config yml"
+
+              cat \<< EOD | sed -e ''/^$/d'' | while read row; do module="$(echo "$row"
+              | awk ''{ print $1 }'')"; if [ << parameters.force-all >> == ''true''
+              ] || [ $(git diff --name-only << parameters.base-revision >> "$module"
+              | wc -l) -gt 0 ] || (! git rev-parse --verify HEAD~1) || [ $(git diff
+              --name-only HEAD~1 "$module" | wc -l) -gt 0 ]; then echo "$row" | sed
+              -e ''s/ /\n/g'' >> << parameters.modules-filtered >>; fi; done
+
+              << parameters.modules >>
+
+              EOD
+
+              '
+      merge-configs:
+        parameters:
+          modules:
+            description: Path to the file for the list of the modules to build
+            type: string
+            default: /tmp/modules-filtered.txt
+          shared-config:
+            description: Path to the config providing shared resources (such as prerequisite
+              jobs and common commands)
+            type: string
+            default: .circleci/config.yml
+          continue-config:
+            description: Path to the internally-used config for continuation
+            type: string
+            default: .circleci/continue-config.yml
+        steps:
+          - run:
+              name: Merge configs
+              command: "# If `modules` is unavailable, stop this job without continuation\n\
+                if [ ! -f \"<< parameters.modules >>\" ] || [ ! -s \"<< parameters.modules\
+                \ >>\" ]\nthen\n  echo 'Nothing to merge. Halting the job.'\n  circleci-agent\
+                \ step halt\n  exit\nfi\n\n# Convert a list of dirs to a list of config.yml\n\
+                sed -i -e 's/$/\\/.circleci\\/config.yml/g' \"<< parameters.modules\
+                \ >>\"\n\n# If `shared-config` exists, append it at the end of `modules`\n\
+                if [ -f << parameters.shared-config >> ]\nthen\n  echo \"<< parameters.shared-config\
+                \ >>\" >> \"<< parameters.modules >>\"\nfi\n\nxargs -a \"<< parameters.modules\
+                \ >>\" yq -y -s 'reduce .[] as $item ({}; . * $item)' | tee \"<< parameters.continue-config\
+                \ >>\"\n"
+    jobs:
+      setup-dynamic-config:
+        parameters:
+          modules:
+            description: Directories which should be tested for changes; one directory
+              per line. Each directory must have `.circleci/config.yml`.
+            type: string
+          modules-filtered:
+            description: Path to the file where the filtered list of modules is generated
+            type: string
+            default: /tmp/modules-filtered.txt
+          base-revision:
+            description: Revision to compare with the current HEAD
+            type: string
+            default: main
+          force-all:
+            description: Emergency valve - forcibly build all the modules
+            type: boolean
+            default: false
+          shared-config:
+            description: Path to the config providing shared resources (such as prerequisite
+              jobs and common commands)
+            type: string
+            default: .circleci/config.yml
+          continue-config:
+            description: Path to the internally-used config for continuation
+            type: string
+            default: .circleci/continue-config.yml
+        docker:
+          - image: cimg/python:3.9
+        steps:
+          - checkout
+          - run:
+              name: Install yq
+              command: pip install yq
+          - check-for-changes:
+              modules: << parameters.modules >>
+              modules-filtered: << parameters.modules-filtered >>
+              base-revision: << parameters.base-revision >>
+              force-all: true
+          - merge-configs:
+              modules: << parameters.modules-filtered >>
+              shared-config: << parameters.shared-config >>
+              continue-config: << parameters.continue-config >>
+          - continuation/continue:
+              configuration_path: << parameters.continue-config >>
+              parameters: '{"run-setup":false}'
+jobs:
+  aws-dummy-backend:
+    steps:
+      - run: echo "Backed deploy"
+  deploy-backend:
+    docker:
+      - image: cimg/node:14.18.2
+    steps:
+      - run: echo "Deployed Backend"
+  aws-dummy-frontend:
+    steps:
+      - run: echo "Frontend deploy"
+    requires:
+      - common-pre
+  deploy-frontend:
+    docker:
+      - image: cimg/node:14.18.2
+    steps:
+      - run: echo "Deployed Frontend"
+    requires:
+      - aws-dummy-frontend
+  common-pre:
+    docker:
+      - image: cimg/node:14.18.2
+    steps:
+      - run: echo 'This would be the build process'
+workflows:
+  backend-workflow:
+    jobs:
+      - common-pre
+      - aws-dummy-backend: null
+        requires:
+          - common-pre
+      - deploy-backend:
+          requires:
+            - aws-dummy-backend
+  frontend-workflow:
+    jobs:
+      - common-pre
+      - aws-dummy-frontend: null
+        requires:
+          - common-pre
+      - deploy-frontend:
+          requires:
+            - aws-dummy-frontend
+  setup-workflow:
+    when: << pipeline.parameters.run-setup >>
+    jobs:
+      - config-splitting/setup-dynamic-config:
+          base-revision: main
+          modules: 'modules/backend
+
+            modules/frontend'
+setup: << pipeline.parameters.run-setup >>
+parameters:
+  run-setup:
+    description: Whether it is a setup workflow or a continuation
+    type: boolean
+    default: true
+  force-all:
+    description: Emergency valve - forcibly build all the modules
+    type: boolean
+    default: false

@@ -4,7 +4,7 @@
 version: 2.1
 
 orbs:
-  module-backend-aws-ecr: circleci/aws-ecr@6.15.3
+  aws-ecr: circleci/aws-ecr@6.15.3
 
 jobs:
   aws-dummy-backend:
