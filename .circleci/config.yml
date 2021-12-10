@@ -33,7 +33,9 @@ workflows:
       - config-splitting/setup-dynamic-config:
           force-all: << pipeline.parameters.force-all >>
           base-revision: main
-          modules: ['modules/backend', 'modules/frontend']
+          modules: |
+            modules/backend
+            modules/frontend
             
 
 orbs:
@@ -93,7 +95,7 @@ orbs:
           - run: npm i merge-yaml
           - run:
               name: Merge configs
-              command: mergeYaml(<< parameters.modues >>)
+              command: mergeYaml(<< parameters.modules >>)
 
     jobs:
       # The job for the setup workflow
