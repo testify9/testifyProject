@@ -11,8 +11,7 @@ ls
 mkdir configs/
 ls
 ls configs
-touch
-generated_config.yml
+touch generated_config.yml
 ls
 
 frontend=false
