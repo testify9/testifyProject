@@ -98,5 +98,5 @@ workflows:
       - config-splitting/setup-dynamic-config:
           base-revision: main
           modules: |
-            backend
-            frontend
+            modules/backend
+            modules/frontend
