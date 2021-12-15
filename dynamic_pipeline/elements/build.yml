@@ -6,3 +6,4 @@ workflows:
           <<: *base_build_job_config
       - lighthouse-check:
           <<: *base_job_config
+
