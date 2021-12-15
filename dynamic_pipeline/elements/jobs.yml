@@ -5,7 +5,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-dist-cache-{{ epoch }}
+            - v1-dist-cache-<< BUILD_VERSION >>
       - run:
           name: Define current base
           command: echo "build test"
