@@ -6,7 +6,7 @@ jobs:
       - run:
           command: npm ci
       - run:
-          command: npm build
+          command: npm run-script build
       - save_cache:
           paths:
             - dist
