@@ -20,14 +20,6 @@ orbs:
           - image: cimg/node:14.18.2
         steps:
           - checkout
-          - run:
-              command: npm ci
-          - run:
-              command: npm build
-          - save_cache:
-              paths:
-                - dist
-              key: v1-dist-cache-$CIRCLE_BUILD_NUM
           - check-for-changes-merge-configs
           - continuation/continue:
               configuration_path: ./dynamic_pipeline/configs/generated_config.yml

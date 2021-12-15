@@ -5,6 +5,7 @@
 version: 2.1
 orbs:
   aws-ecr: circleci/aws-ecr@6.15.3
+  browser-tools: circleci/browser-tools@1.2.3
 
 executors:
   node-executor:
