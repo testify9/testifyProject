@@ -1,4 +1,3 @@
       - deploy-frontend:
           <<: *base_job_config
-          requires:
-            - build
+
