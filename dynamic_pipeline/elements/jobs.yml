@@ -33,7 +33,7 @@ jobs:
       - restore_cache:
           keys:
             - test
-      - run: ls -la -R dist
+      - run: ls -la -R ./dist
       - run:  
           name: Install lhci 
           command: sudo npm install -g @lhci/cli@0.8.x
