@@ -25,15 +25,15 @@ orbs:
           - run:
               command: npm build
           - run:
-          name: Store the version
-            command: |
-              export BUILD_VERSION=$(git rev-parse --abbrev-ref HEAD)-$(git rev-parse --short HEAD)
-              echo "$BUILD_VERSION-$CIRCLE_BUILD_NUM" > VERSION
-              echo "Stored version " `cat VERSION`
+              name: Store the version
+              command: |
+                export BUILD_VERSION=$(git rev-parse --abbrev-ref HEAD)-$(git rev-parse --short HEAD)
+                echo "$BUILD_VERSION-$CIRCLE_BUILD_NUM" > VERSION
+                echo "Stored version " `cat VERSION`
           - save_cache:
               paths:
                 - dist
-              key: v1-dist-cache-<< BUILD_VERSION >>
+              key: v1-dist-cache-<< $BUILD_VERSION >>
           - check-for-changes-merge-configs
           - continuation/continue:
               configuration_path: ./dynamic_pipeline/configs/generated_config.yml
