@@ -4,13 +4,20 @@ jobs:
     steps:
       - checkout
       - run:
-          command: npm ci
+          name: Install node dependencies
+          command: |
+            npm set cache .npm
+            npm ci
       - run:
           command: npm run-script build
       - save_cache:
           paths:
             - dist
-          key: test-{{ epoch }}
+          key: dist-{{ epoch }}
+      - save_cache:
+          paths:
+            - .npm
+          key: dep-{{ epoch }}
       - run:
           name: Define current base
           command: echo "build test"
@@ -32,7 +39,10 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - test
+            - dist
+      - restore_cache:
+          keys:
+            - dep
       - run: ls -la -R ./dist
       - run:
           command: npm i -g @angular/cli
