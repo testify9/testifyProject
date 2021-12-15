@@ -19,3 +19,21 @@ jobs:
     executor: node-executor
     steps:
       - run: echo "dep frontend"
+  
+  lighthouse-check:
+    docker:
+      - image: cimg/node:14.18.2-browsers # own image for browser support
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dist-cache-$CIRCLE_BUILD_NUM
+      - run: ls -la -R dist
+      - run:  
+          name: Install lhci 
+          command: sudo npm install -g @lhci/cli@0.8.x
+      - browser-tools/install-chrome
+      - browser-tools/install-chromedriver
+      - run: 
+          name: Run lhci
+          command: lhci autorun
