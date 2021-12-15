@@ -1,143 +1,33 @@
-# Config for the setup workflow and common resources (jobs, commands) for main workflows
-# `common-` prefix is added for common resources (to avoid conflicts with module resources)
-
 version: 2.1
 
-setup: << pipeline.parameters.run-setup >>
-
-# All pipeline parameters need to be defined equally both for the setup workflow and main workflows
-# These parameters will be passed to both of them
-parameters:
-  run-setup:
-    description: Whether it is a setup workflow or a continuation
-    type: boolean
-    default: true
-  force-all:
-    description: Emergency valve - forcibly build all the modules
-    type: boolean
-    default: false
-
-# Common jobs for the main workflows
-jobs:
-  common-pre:
-    docker:
-      - image: alpine
-    steps:
-      - common-say-hello
-      - run: echo 'Jobs with `common-` prefix are intended to be shared among modules'
-
-workflows:
-  setup-workflow:
-    when: << pipeline.parameters.run-setup >>
-    jobs:
-      - config-splitting/setup-dynamic-config:
-          force-all: << pipeline.parameters.force-all >>
-          base-revision: main
-          modules: |
-            modules/backend
-            modules/frontend
-            
+setup: true
 
 orbs:
-  # An "embedded" orb to facilitate config splitting
   config-splitting:
-    # Dependencies
     orbs:
       continuation: circleci/continuation@0.1.2
-    # Commands for the setup workflow
+
     commands:
-      list-changed-modules:
-        parameters:
-          modules:
-            description: |
-              Directories which should be built upon changes.
-              Each row represents a space-separated list of the root directories for modules, each of which must has own `.circleci/config.yml`.
-              The first item of the list will be tested for changes, and will be added to the filtered list of modules if there are any changes.
-              The subsequent items, if there are any, will also be added to the filtered list of modules if there are any changes in the directory specified as the first item.
-
-              CAVEAT: Directory names having white spaces cannot be specified.
-            type: string
-          modules-filtered:
-            description: Path to the file where the filtered list of modules is generated
-            type: string
-            default: /tmp/modules-filtered.txt
-          base-revision:
-            description: Revision to compare with the current HEAD
-            type: string
-            default: main
-          force-all:
-            description: Emergency valve - forcibly build all the modules
-            type: boolean
-            default: false
+      check-for-changes-merge-configs:
         steps:
-          - run:
-              name: Generate the list of modules having changes
-              command: |
-                # Add each module to `modules-filtered` if 1) `force-all` is set to `true`, 2) there is a diff against `base-revision`, 3) there is no `HEAD~1` (i.e., this is the very first commit for the repo) OR 4) there is a diff against the previous commit
-                cat \<< EOD | sed -e '/^$/d' | while read row; do module="$(echo "$row" | awk '{ print $1 }')"; if [ << parameters.force-all >> == 'true' ] || [ $(git diff --name-only << parameters.base-revision >> "$module" | wc -l) -gt 0 ] || (! git rev-parse --verify HEAD~1) || [ $(git diff --name-only HEAD~1 "$module" | wc -l) -gt 0 ]; then echo "$row" | sed -e 's/ /\n/g' >> << parameters.modules-filtered >>; fi; done
-                << parameters.modules >>
-                EOD
-      merge-modular-configs:
-        parameters:
-          modules:
-            description: Path to the file for the list of the modules to build
-            type: string
-            default: /tmp/modules-filtered.txt
-          shared-config:
-            description: Path to the config providing shared resources (such as prerequisite jobs and common commands)
-            type: string
-            default: .circleci/config.yml
-          continue-config:
-            description: Path to the internally-used config for continuation
-            type: string
-            default: .circleci/continue-config.yml
-        steps:
-          - run: npm i merge-yaml
-          - run:
-              name: Merge configs
-              command: |
-                mergeYaml(['modules/backend/.circleci/config.yml', 'modules/frontend/.circleci/config.yml'])
-
+          - run: |
+              chmod +x ./dynamic_pipeline/generate-pipeline-config
+              ./dynamic_pipeline/generate-pipeline-config
+              
     jobs:
-      # The job for the setup workflow
       setup-dynamic-config:
-        parameters:
-          modules:
-            description: Directories which should be tested for changes; one directory per line. Each directory must have `.circleci/config.yml`.
-            type: string
-          base-revision:
-            description: Revision to compare with the current HEAD
-            type: string
-            default: main
-          force-all:
-            description: Emergency valve - forcibly build all the modules
-            type: boolean
-            default: false
-          modules-filtered:
-            description: Path to the file where the filtered list of modules is generated
-            type: string
-            default: /tmp/modules-filtered.txt
-          shared-config:
-            description: Path to the config providing shared resources (such as prerequisite jobs and common commands)
-            type: string
-            default: .circleci/config.yml
-          continue-config:
-            description: Path to the internally-used config for continuation
-            type: string
-            default: .circleci/continue-config.yml
         docker:
           - image: cimg/node:14.18.2
         steps:
           - checkout
-          - list-changed-modules:
-              modules: << parameters.modules >>
-              modules-filtered: << parameters.modules-filtered >>
-              base-revision: << parameters.base-revision >>
-              force-all: true
-          - merge-modular-configs:
-              modules: << parameters.modules-filtered >>
-              shared-config: << parameters.shared-config >>
-              continue-config: << parameters.continue-config >>
+          # - run: 
+          - run:
+              command: npm ci
+          - check-for-changes-merge-configs
           - continuation/continue:
-              configuration_path: << parameters.continue-config >>
-              parameters: '{"run-setup":false}'
+              configuration_path: ./dynamic_pipeline/configs/generated_config.yml
+
+workflows:
+  setup-workflow:
+    jobs:
+      - config-splitting/setup-dynamic-config
