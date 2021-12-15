@@ -10,7 +10,7 @@ jobs:
       - save_cache:
           paths:
             - dist
-          key: v1-dist-cache-<< $CIRCLE_BUILD_NUM >>
+          key: v1-dist-cache-\<< $CIRCLE_BUILD_NUM >>
       - run:
           name: Define current base
           command: echo "build test"
@@ -32,7 +32,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-dist-cache-<< $CIRCLE_BUILD_NUM >>
+            - v1-dist-cache-\<< $CIRCLE_BUILD_NUM >>
       - run: ls -la -R dist
       - run:  
           name: Install lhci 
