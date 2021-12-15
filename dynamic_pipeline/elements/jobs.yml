@@ -7,11 +7,10 @@ jobs:
           command: npm ci
       - run:
           command: npm build
-      - run: echo $CIRCLE_BUILD_NUM
       - save_cache:
           paths:
             - dist
-          key: $CIRCLE_BUILD_NUM
+          key: test-{{ epoch }}
       - run:
           name: Define current base
           command: echo "build test"
@@ -33,7 +32,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - $CIRCLE_BUILD_NUM
+            - test
       - run: ls -la -R dist
       - run:  
           name: Install lhci 
