@@ -1,7 +1,7 @@
 module.exports = {
   ci: {
     collect: {
-      numberOfRuns: 5,
+      numberOfRuns: 1,
       startServerCommand: 'npm start',
       url: ['http://localhost:4200/'],
       settings: {
