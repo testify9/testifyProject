@@ -35,7 +35,7 @@ jobs:
             - test
       - run: ls -la -R ./dist
       - run:
-          command: npm ci
+          command: npm i -g @angular/cli
       - run:  
           name: Install lhci 
           command: sudo npm install -g @lhci/cli@0.8.x
