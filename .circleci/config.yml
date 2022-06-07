@@ -1,38 +1,16 @@
 version: 2.1
 
-setup: true
-
-orbs:
-  config-splitting:
-    orbs:
-      continuation: circleci/continuation@0.1.2
-
-    commands:
-      check-for-changes-merge-configs:
-        steps:
-          - run: |
-              chmod +x ./dynamic_pipeline/generate-pipeline-config
-              ./dynamic_pipeline/generate-pipeline-config
-              
-    jobs:
-      setup-dynamic-config:
-        docker:
-          - image: cimg/node:14.18.2
-        steps:
-          - checkout
-          - restore_cache:
-              keys:
-                - dep
-          - run:
-              name: Install node dependencies
-              command: |
-                npm set cache .npm
-                npm ci
-          - check-for-changes-merge-configs
-          - continuation/continue:
-              configuration_path: ./dynamic_pipeline/configs/generated_config.yml
-
 workflows:
-  setup-workflow:
+  version: 2
+  ci:
     jobs:
-      - config-splitting/setup-dynamic-config
+      - flow
+
+jobs:
+  ci:
+    docker:
+      - image: cimg/node:16.14.0
+    steps:
+     - run:
+        name: Define current base
+        command: npm install
