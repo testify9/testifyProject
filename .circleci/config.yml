@@ -1,12 +1,11 @@
 version: 2.1
 
 workflows:
-  version: 2
   ci:
     jobs:
-      - flow
+      - flow:
         context:
-          - "cypress"
+          - cypress
 
 jobs:
   flow:
