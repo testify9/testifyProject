@@ -65,10 +65,14 @@ describe('Short Url Tests', function () {
       cy.get('[data-cy=create-shorturl]').click('top');
 
       cy.get('[data-cy=shorturl-form]').should('be.visible');
+  
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(1000);
 
+      cy.get('[data-cy=source-input]').should('be.visible');
+  
       cy.get('[data-cy=source-input]')
         .find('input[placeholder="Source Path"]', { includeShadowDom: true })
-        .last()
         .click()
         .type('cypress_test_sourcePath', { force: true });
       cy.get('[data-cy=target-input]')
