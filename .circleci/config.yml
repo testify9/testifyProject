@@ -14,7 +14,7 @@ jobs:
     steps:
      - checkout
      - run:
-        name: Define current base
+        name: install deps
         command: npm install
      - run:
         name: Frontend E2E Tests

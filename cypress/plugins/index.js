@@ -5,7 +5,7 @@
  */
  module.exports = (on, config) => {
 
-    require('dotenv').config({ path: '../.env' });
+    require('dotenv').config({ path: '.env' });
 
     if (config.env.auth0_username === undefined) {
       config.env.auth0_username = process.env.CMS_AUTH0_E2E_USERNAME;

@@ -14,6 +14,9 @@ describe('Short Url Tests', function () {
   
     const createShortUrl = (sourcePath: string, targetPath: string): void => {
       cy.get('[data-cy=create-shorturl]').click('top');
+
+      cy.get('[data-cy=shorturl-form]').should('be.visible');
+      
       cy.get('[data-cy=source-input]')
         .find('input[placeholder="Source Path"]', { includeShadowDom: true })
         .click()
@@ -22,7 +25,8 @@ describe('Short Url Tests', function () {
         .find('input[placeholder="Target Path"]', { includeShadowDom: true })
         .click()
         .type(targetPath, { force: true });
-      cy.get('[data-cy=submit]').click('top');
+
+      cy.get('[data-cy=submit]').should('be.visible').click('top');
     };
   
     const deleteShortUrl = (sourcePath: string): void => {
@@ -34,6 +38,8 @@ describe('Short Url Tests', function () {
         .find('#option-delete', { includeShadowDom: true })
         .first()
         .click();
+
+      cy.get('rb-modal[open]').should('be.visible')
   
       cy.get('rb-modal[open]')
         .first()
@@ -57,6 +63,9 @@ describe('Short Url Tests', function () {
       createShortUrl('cypress_test_sourcePath', 'cypress_test_targetPath');
   
       cy.get('[data-cy=create-shorturl]').click('top');
+
+      cy.get('[data-cy=shorturl-form]').should('be.visible');
+
       cy.get('[data-cy=source-input]')
         .find('input[placeholder="Source Path"]', { includeShadowDom: true })
         .last()
@@ -98,6 +107,7 @@ describe('Short Url Tests', function () {
       // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.wait(1000);
   
+      cy.get('[data-cy=submit]').should('be.visible')
       cy.get('[data-cy=submit]').click('top');
   
       cy.contains('cypress_test_targetPath_edit')
