@@ -4,8 +4,8 @@ workflows:
   ci:
     jobs:
       - flow:
-        context:
-          - cypress
+          context:
+            - cypress
 
 jobs:
   flow:
