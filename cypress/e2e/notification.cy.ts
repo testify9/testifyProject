@@ -21,25 +21,32 @@ describe('Notifications Tests', function () {
       endDay: number,
       visibleFor: 'All' | 'Red Bull accounts' | 'B2B accounts',
     ): void => {
-      cy.get('[data-cy=create-notification]').click('top');
-      cy.url().should('include', 'notifications/create');
-  
-      form().find('[data-cy=submit]').find('rb-button').should('have.attr', 'disabled');
-      form().find('[data-cy=title]').find('input', { includeShadowDom: true }).click().type(title, { force: true });
-      form().find('[data-cy=submit]').find('rb-button').should('have.attr', 'disabled');
-  
-      form().find('.ql-editor').click().type(text, { force: true });
-      form().find('[data-cy=submit]').find('rb-button').should('have.attr', 'disabled');
-  
-      form().find('[data-cy=date]').click().find('rb-text', { includeShadowDom: true }).contains(startDay).click();
-      form().find('[data-cy=date]').click();
-      form().find('[data-cy=submit]').find('rb-button').should('have.attr', 'disabled');
-  
-      form().find('[data-cy=visibleFor]').find('#select', { includeShadowDom: true }).click('top');
-  
-      form().find('[data-cy=visibleFor]').find(`#option-${visibleFor}`, { includeShadowDom: true }).click();
-  
-      form().find('[data-cy=submit]').click('top');
+
+      cy.get('body').then(($body) => {
+        if (!$body.text().includes(title)) { 
+          cy.get('[data-cy=create-notification]').click('top');
+          cy.url().should('include', 'notifications/create');
+      
+          form().find('[data-cy=submit]').find('rb-button').should('have.attr', 'disabled');
+          form().find('[data-cy=title]').find('input', { includeShadowDom: true }).click().type(title, { force: true });
+          form().find('[data-cy=submit]').find('rb-button').should('have.attr', 'disabled');
+      
+          form().find('.ql-editor').click().type(text, { force: true });
+          form().find('[data-cy=submit]').find('rb-button').should('have.attr', 'disabled');
+      
+          form().find('[data-cy=date]').click().find('rb-text', { includeShadowDom: true }).contains(startDay).click();
+          form().find('[data-cy=date]').click();
+          form().find('[data-cy=submit]').find('rb-button').should('have.attr', 'disabled');
+      
+          form().find('[data-cy=visibleFor]').find('#select', { includeShadowDom: true }).click('top');
+      
+          form().find('[data-cy=visibleFor]').find(`#option-${visibleFor}`, { includeShadowDom: true }).click();
+      
+          form().find('[data-cy=submit]').click('top');
+        } else {
+          return;
+        }
+      });
     };
   
     const deleteNotification = (title: string): void => {

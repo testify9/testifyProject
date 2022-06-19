@@ -13,10 +13,17 @@ describe('Search Synonym Tests', function () {
     });
   
     const createSearchSynonym = (keyword: string, target: string): void => {
-      cy.get('[data-cy=create-searchsynonym]').click('top');
-      cy.get('[data-cy=keyword-input]').find('input', { includeShadowDom: true }).click().type(keyword, { force: true });
-      cy.get('[data-cy=target]').find('input', { includeShadowDom: true }).click().type(target, { force: true });
-      cy.get('[data-cy=submit]').click('top');
+
+      cy.get('body').then(($body) => {
+        if (!$body.text().includes(keyword)) { 
+          cy.get('[data-cy=create-searchsynonym]').click('top');
+          cy.get('[data-cy=keyword-input]').find('input', { includeShadowDom: true }).click().type(keyword, { force: true });
+          cy.get('[data-cy=target]').find('input', { includeShadowDom: true }).click().type(target, { force: true });
+          cy.get('[data-cy=submit]').click('top');
+        } else {
+          return;
+        }
+      });
     };
   
     const deleteSearchSynonym = (keyword: string): void => {
@@ -40,54 +47,27 @@ describe('Search Synonym Tests', function () {
       deleteSearchSynonym('cypress_test_keyword');
     });
   
-    it('Create search synonym with existing keyword does not work. Use Cancel', { scrollBehavior: 'top' }, () => {
-      createSearchSynonym('cypress_test_keyword_2', 'cypress_test_target_2');
+    it('Edited text changes for keywords', () => {
+      createSearchSynonym('cypress_test_keyword', 'cypress_test_target');
   
-      cy.get('cms-list-view').should('not.contain', 'cypress_test_keyword_2');
+      cy.get('cms-list-view').should('contain', 'cypress_test_keyword');
+      cy.contains('cypress_test_keyword').parents('[data-cy=searchsynonym-display]').find('[data-cy=edit]').click();
   
-      cy.get('[data-cy=create-searchsynonym]').click('top');
       cy.get('[data-cy=keyword-input]')
+        .first()
         .find('input', { includeShadowDom: true })
-        .last()
         .click()
-        .type('cypress_test_keyword_2', { force: true });
-      cy.get('[data-cy=target]')
-        .find('input', { includeShadowDom: true })
-        .last()
-        .click()
-        .type('cypress_test_target_2', { force: true });
+        .type('_edited', { force: true });
   
       // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.wait(1000);
   
-      cy.get('[data-cy=submit]').find('rb-button').should('have.attr', 'disabled');
+      cy.get('[data-cy=submit]').click('top');
   
-      cy.get('[data-cy=cancel]').click('top');
+      cy.contains('cypress_test_keyword_edited')
+        .parents('[data-cy=searchsynonym-display]')
+        .should('contain', Cypress.env('auth0_username'));
   
-      deleteSearchSynonym('cypress_test_keyword_2');
+      deleteSearchSynonym('cypress_test_keyword_edited');
     });
-  
-    // it('Edited text changes for keywords', () => {
-    //   createSearchSynonym('cypress_test_keyword', 'cypress_test_target');
-  
-    //   cy.get('cms-list-view').should('contain', 'cypress_test_keyword');
-    //   cy.contains('cypress_test_keyword').parents('[data-cy=searchsynonym-display]').find('[data-cy=edit]').click();
-  
-    //   cy.get('[data-cy=keyword-input]')
-    //     .first()
-    //     .find('input', { includeShadowDom: true })
-    //     .click()
-    //     .type('_edited', { force: true });
-  
-    //   // eslint-disable-next-line cypress/no-unnecessary-waiting
-    //   cy.wait(1000);
-  
-    //   cy.get('[data-cy=submit]').click('top');
-  
-    //   cy.contains('cypress_test_keyword_edited')
-    //     .parents('[data-cy=searchsynonym-display]')
-    //     .should('contain', Cypress.env('auth0_username'));
-  
-    //   deleteSearchSynonym('cypress_test_keyword_edited');
-    // });
   });

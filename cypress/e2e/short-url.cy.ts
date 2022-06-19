@@ -13,24 +13,29 @@ describe('Short Url Tests', function () {
     });
   
     const createShortUrl = (sourcePath: string, targetPath: string): void => {
+      cy.get('body').then(($body) => {
+        if (!$body.text().includes(sourcePath)) { 
+          cy.get('[data-cy=create-shorturl]').should('be.visible');
 
-      cy.get('[data-cy=create-shorturl]').should('be.visible');
-
-      cy.get('[data-cy=create-shorturl]').click('top');
-
-      cy.get('[data-cy=shorturl-form]').should('be.visible');
-      cy.get('[data-cy=source-input]').should('be.visible');
-
-      cy.get('[data-cy=source-input]')
-        .find('input[placeholder="Source Path"]', { includeShadowDom: true })
-        .click()
-        .type(sourcePath, { force: true });
-      cy.get('[data-cy=target-input]')
-        .find('input[placeholder="Target Path"]', { includeShadowDom: true })
-        .click()
-        .type(targetPath, { force: true });
-
-      cy.get('[data-cy=submit]').should('be.visible').click('top');
+          cy.get('[data-cy=create-shorturl]').click('top');
+    
+          cy.get('[data-cy=shorturl-form]').should('be.visible');
+          cy.get('[data-cy=source-input]').should('be.visible');
+    
+          cy.get('[data-cy=source-input]')
+            .find('input[placeholder="Source Path"]', { includeShadowDom: true })
+            .click()
+            .type(sourcePath, { force: true });
+          cy.get('[data-cy=target-input]')
+            .find('input[placeholder="Target Path"]', { includeShadowDom: true })
+            .click()
+            .type(targetPath, { force: true });
+    
+          cy.get('[data-cy=submit]').should('be.visible').click('top');
+        } else {
+          return;
+        }
+      });
     };
   
     const deleteShortUrl = (sourcePath: string): void => {

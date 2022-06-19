@@ -15,4 +15,6 @@ module.exports = defineConfig({
     supportFile: './cypress/support/index.ts',
   },
   retries: 5,
+  defaultCommandTimeout: 10000,
+  requestTimeout: 10000
 })
