@@ -9,10 +9,13 @@ describe('Short Url Tests', function () {
   
     this.beforeEach(() => {
       // eslint-disable-next-line cypress/no-unnecessary-waiting
-      cy.wait(1000);
+      cy.wait(2000);
     });
   
     const createShortUrl = (sourcePath: string, targetPath: string): void => {
+
+      cy.get('[data-cy=create-shorturl]').should('be.visible');
+
       cy.get('[data-cy=create-shorturl]').click('top');
 
       cy.get('[data-cy=shorturl-form]').should('be.visible');
@@ -31,7 +34,9 @@ describe('Short Url Tests', function () {
   
     const deleteShortUrl = (sourcePath: string): void => {
       cy.contains(sourcePath).parents('[data-cy=shorturl-display]').find('[data-cy=more]').click();
-  
+
+      cy.get('rb-dropdown').should('be.visible');
+
       cy.contains(sourcePath)
         .parents('[data-cy=shorturl-display]')
         .find('rb-dropdown')
