@@ -19,7 +19,8 @@ describe('Short Url Tests', function () {
       cy.get('[data-cy=create-shorturl]').click('top');
 
       cy.get('[data-cy=shorturl-form]').should('be.visible');
-      
+      cy.get('[data-cy=source-input]').should('be.visible');
+
       cy.get('[data-cy=source-input]')
         .find('input[placeholder="Source Path"]', { includeShadowDom: true })
         .click()
@@ -95,8 +96,11 @@ describe('Short Url Tests', function () {
       cy.contains('cypress_test_targetPath_2')
         .parents('[data-cy=shorturl-display]')
         .find('[data-cy=more]')
-        .click('top')
-        .get('rb-dropdown')
+        .click('top');
+
+      cy.get('rb-dropdown').should('be.visible');
+
+      cy.get('rb-dropdown')
         .find('#option-edit', { includeShadowDom: true })
         .first()
         .click();
