@@ -24,23 +24,5 @@ declare namespace Cypress {
           return;
         }
       });
-  
-      // cy.getCookies()
-      //   .should('have.length.gte', 0)
-      //   .then((cookies) => {
-      //     // just to get into "then" to check cookies without failing
-  
-      //     // check if the "auth0.<clientId>.is.authenticated" cookie is set with a value of true
-      //     const check = cookies.some((cookie) => {
-      //       return cookie.name === `auth0.${Cypress.env('auth0_client_id')}.is.authenticated` && cookie.value === 'true';
-      //     });
-  
-      //     if (!check) {
-      //       cy.get('input[name=email]').click().type(username);
-      //       cy.get('input[name=password]').click().type(`${password}{enter}`);
-      //     }
-  
-      //     loggedIn = true;
-      //   });
     },
   );
