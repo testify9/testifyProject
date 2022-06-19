@@ -98,9 +98,12 @@ describe('Short Url Tests', function () {
         .find('[data-cy=more]')
         .click('top');
 
-      cy.get('rb-dropdown').should('be.visible');
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(3000);
 
-      cy.get('rb-dropdown')
+      cy.contains('cypress_test_targetPath_2')
+        .parents('[data-cy=shorturl-display]')
+        .get('rb-dropdown')
         .find('#option-edit', { includeShadowDom: true })
         .first()
         .click();
@@ -113,7 +116,7 @@ describe('Short Url Tests', function () {
         .type('cypress_test_targetPath_2_edit', { force: true });
   
       // eslint-disable-next-line cypress/no-unnecessary-waiting
-      cy.wait(1000);
+      cy.wait(3000);
   
       cy.get('[data-cy=submit]').should('be.visible')
       cy.get('[data-cy=submit]').click('top');
