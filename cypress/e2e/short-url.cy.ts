@@ -48,11 +48,6 @@ describe('Short Url Tests', function () {
         .click({ force: true });
     };
   
-    it('Delete short url', { scrollBehavior: 'top' }, () => {
-      createShortUrl('cypress_test_sourcePath', 'cypress_test_targetPath');
-      deleteShortUrl('cypress_test_sourcePath');
-    });
-  
     it('Create short url', { scrollBehavior: 'top' }, () => {
       createShortUrl('cypress_test_sourcePath', 'cypress_test_targetPath');
       cy.get('cms-list-view').should('contain', 'cypress_test_targetPath');
