@@ -72,11 +72,11 @@ describe('Short Url Tests', function () {
 
       cy.get('[data-cy=source-input]').should('be.visible');
   
-      cy.get('[data-cy=source-input]')
+      cy.get('[data-cy=shorturl-form]')
         .find('input[placeholder="Source Path"]', { includeShadowDom: true })
         .click()
         .type('cypress_test_sourcePath_1', { force: true });
-      cy.get('[data-cy=target-input]')
+      cy.get('[data-cy=shorturl-form]')
         .find('input[placeholder="Target Path"]', { includeShadowDom: true })
         .click()
         .type('cypress_test_targetPath_1', { force: true });
@@ -103,7 +103,7 @@ describe('Short Url Tests', function () {
 
       cy.contains('cypress_test_targetPath_2')
         .parents('[data-cy=shorturl-display]')
-        .get('rb-dropdown')
+        .find('rb-dropdown')
         .find('#option-edit', { includeShadowDom: true })
         .first()
         .click();
