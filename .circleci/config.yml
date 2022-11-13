@@ -13,7 +13,7 @@ jobs:
       - image: cypress/base:16.14.0
     steps:
      - checkout
-    - run: echo 'test'
+     - run: echo 'test'
   #   - run:
   #      name: install deps
   #      command: npm install
