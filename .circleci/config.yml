@@ -13,12 +13,13 @@ jobs:
       - image: cypress/base:16.14.0
     steps:
      - checkout
-     - run:
-        name: install deps
-        command: npm install
-     - run:
-        name: Frontend E2E Tests
-        command: npx cypress run --env auth0_username=\"$TESTUSER_EMAIL\",auth0_password=\"$TESTUSER_PW\"
+    - run: echo 'test'
+  #   - run:
+  #      name: install deps
+  #      command: npm install
+  #   - run:
+  #      name: Frontend E2E Tests
+  #      command: npx cypress run --env auth0_username=\"$TESTUSER_EMAIL\",auth0_password=\"$TESTUSER_PW\"
 
   # cypress-e2e:
   #   docker:
