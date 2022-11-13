@@ -3,7 +3,7 @@ version: 2.1
 workflows:
   version: 2
   build:
-    when: -z ${CIRCLE_PULL_REQUEST##*/}
+    when: ${CIRCLE_PULL_REQUEST##*/}
     jobs:
       - build
   deploy:
@@ -20,7 +20,7 @@ jobs:
       - image: cypress/base:16.14.0
     steps:
      - checkout
-     - run: echo 'Build'
+     - run: echo ${CIRCLE_PULL_REQUEST##*/}
   deploy:
     docker:
       - image: cypress/base:16.14.0
