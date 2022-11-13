@@ -1,18 +1,18 @@
 version: 2.1
 
-
-
 workflows:
+
   ci:
+    on:
+      pull_request:
+        types: [opened]
     jobs:
       - flow:
           context:
             - cypress
 
-on:
-  pull_request:
-    types: [opened]
-    
+
+
 jobs:
   flow:
     docker:
