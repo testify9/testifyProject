@@ -1,13 +1,6 @@
 version: 2.1
 
 workflows:
-  ci:
-    jobs:
-      - flow:
-          context:
-            - cypress
-
-workflows:
   version: 2
   build:
     when: ${CIRCLE_PULL_REQUEST##*/}
