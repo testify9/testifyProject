@@ -3,7 +3,7 @@ version: 2.1
 workflows:
   version: 2
   build:
-    when: ${CIRCLE_PULL_REQUEST##*/}
+    when: -z ${CIRCLE_PULL_REQUEST##*/}
     jobs:
       - build
   deploy:
