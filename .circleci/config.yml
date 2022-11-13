@@ -15,7 +15,7 @@ jobs:
       - image: cypress/base:16.14.0
     steps:
      - checkout
-     - run: echo '${CIRCLE_PULL_REQUEST##*/}'
+     - run: echo ${CIRCLE_PULL_REQUEST##*/}
   #   - run:
   #      name: install deps
   #      command: npm install
