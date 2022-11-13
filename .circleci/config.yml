@@ -7,48 +7,24 @@ workflows:
           context:
             - cypress
 
-
+workflows:
+  version: 2
+  build:
+    when: ${CIRCLE_PULL_REQUEST##*/}
+      - build
+  deploy:
+    - deploay
 
 jobs:
-  flow:
+  build:
     docker:
       - image: cypress/base:16.14.0
     steps:
      - checkout
-     - run: echo ${CIRCLE_PULL_REQUEST##*/}
-  #   - run:
-  #      name: install deps
-  #      command: npm install
-  #   - run:
-  #      name: Frontend E2E Tests
-  #      command: npx cypress run --env auth0_username=\"$TESTUSER_EMAIL\",auth0_password=\"$TESTUSER_PW\"
-
-  # cypress-e2e:
-  #   docker:
-  #     - image: cypress/base:16.14.0
-  #   steps:
-  #     - checkout
-  #     - restore_cache:
-  #         keys:
-  #           - v2-dependencies-cache-{{ checksum "package-lock.json" }}
-  #     - run:
-  #         name: Install node dependencies
-  #         # Only install if the node_modules folder does not exist (i.e.
-  #         # package-lock.json has changed)
-  #         command: |
-  #           [ ! -d "node_modules" ] && npm ci && npm run postinstall \
-  #            || echo "node_modules already exists"
-  #     - restore_cache:
-  #         keys:
-  #           # Computational cache used by nx and Angular
-  #           # Re-generate every time the package-lock.json changes
-  #           - v1-computational-cache-{{ checksum "package-lock.json" }}
-  #           - v1-computational-cache
-  #     - run:
-  #         name: Frontend E2E Tests
-  #         command: |
-  #           ./node_modules/.bin/nx e2e frontend-e2e --configuration=design
-  #     - run:
-  #         name: CMS Frontend E2E Tests
-  #         command: |
-  #           ./node_modules/.bin/nx e2e cms-frontend-e2e --configuration=design
+     - run: echo 'Build'
+  deploy:
+    docker:
+      - image: cypress/base:16.14.0
+    steps:
+     - checkout
+     - run: echo 'Deploy'
