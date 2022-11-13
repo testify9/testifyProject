@@ -7,13 +7,15 @@ workflows:
           context:
             - cypress
 
+
+
 jobs:
   flow:
     docker:
       - image: cypress/base:16.14.0
     steps:
      - checkout
-     - run: echo 'test'
+     - run: echo ${CIRCLE_PULL_REQUEST##*/}
   #   - run:
   #      name: install deps
   #      command: npm install
